@@ -28,6 +28,8 @@
         <FIELD NAME="type" TYPE="char" LENGTH="1" NOTNULL="true" DEFAULT="E" SEQUENCE="false"/>
         <FIELD NAME="description" TYPE="text" NOTNULL="false" SEQUENCE="false"/>
         <FIELD NAME="roomchange" TYPE="int" LENGTH="4" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="Used to flag edited entries which should be displayed as a 'room change'"/>
+        <FIELD NAME="destination" TYPE="text" NOTNULL="false" SEQUENCE="false"/>
+        <FIELD NAME="passengers" TYPE="int" LENGTH="5" NOTNULL="false" SEQUENCE="false"/>
       </FIELDS>
       <KEYS>
         <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
