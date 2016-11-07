@@ -66,7 +66,7 @@ if (!empty($hour)) {
     $thisurl->param('hour', $hour);
 }
 if (!empty($minute)) {
-    $thisurl->param('minute', $minute);;
+    $thisurl->param('minute', $minute);
 }
 
 // Redirect to vehicles form if this areas is the vehicles area.
