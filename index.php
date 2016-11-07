@@ -72,7 +72,7 @@ echo print_header_mrbs(null, null, null, null);
 	</p>
 
 </div>
-<? } ?>
+<?php } ?>
 
 </div>
 <div class="clear"></div>
