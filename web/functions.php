@@ -1350,3 +1350,44 @@ function allowed_to_book($user, $room) {
 
     return false;
 }
+
+/**
+ * Returns the area id for the 'Vehicles' area.
+ *
+ * @return int
+ */
+function get_mrbs_vehicle_area_id()
+{
+    global $DB;
+    static $vehicle_area_id = null;
+    if (!is_null($vehicle_area_id)) {
+        return $vehicle_area_id;
+    }
+
+    $vehicle_area_id = $DB->get_field('block_mrbs_area', 'id', array('area_name' => 'Vehicles'));
+
+    return $vehicle_area_id;
+}
+
+define('MRBS_VEHICLE_AREA', get_mrbs_vehicle_area_id());
+
+/**
+ * Redirect the user to the appropriate booking form depending on if
+ * the given area is Vehicles or not
+ *
+ * @param $area_id
+ * @param bool $on_vehicle_page
+ *
+ * @throws moodle_exception
+ */
+function redirect_to_booking_form($area_id, $on_vehicle_page = false)
+{
+    global $PAGE;
+    $url = $PAGE->url;
+
+    if ($area_id == MRBS_VEHICLE_AREA && !$on_vehicle_page) {
+        redirect('edit_vehicle_entry.php?' . $url->get_query_string());
+    } elseif ($area_id != MRBS_VEHICLE_AREA && $on_vehicle_page) {
+        redirect('edit_entry.php?' . $url->get_query_string());
+    }
+}

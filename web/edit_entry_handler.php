@@ -53,6 +53,10 @@ $rooms = optional_param_array('rooms', array(), PARAM_INT);
 $doublebook = optional_param('doublebook', 0, PARAM_INT);
 $roomchange = optional_param('roomchange', false, PARAM_BOOL);
 
+// Vehicle bookings.
+$destination = optional_param('destination', null, PARAM_TEXT);
+$passengers = optional_param('passengers', null, PARAM_INT);
+
 define('MRBS_ERR_DOUBLEBOOK', 1);
 define('MRBS_ERR_TOOMANY', 2);
 
@@ -337,9 +341,24 @@ foreach ($rooms as $room_id) {
 if (empty($err)) {
     foreach ($rooms as $room_id) {
         if ($edit_type == "series") {
-            $rep_details = mrbsCreateRepeatingEntrys($starttime, $endtime, $rep_type, $rep_enddate, $rep_opt,
-                                                     $room_id, $create_by, $name, $type, $description,
-                                                     isset($rep_num_weeks) ? $rep_num_weeks : 0, $roomchange, $id);
+            $rep_details = mrbsCreateRepeatingEntrys(
+                $starttime,
+                $endtime,
+                $rep_type,
+                $rep_enddate,
+                $rep_opt,
+                $room_id,
+                $create_by,
+                $name,
+                $type,
+                $description,
+                isset($rep_num_weeks) ? $rep_num_weeks : 0,
+                $roomchange,
+                $id,
+                $destination,
+                $passengers
+            );
+
             $new_id = $rep_details->id;
 
             $enddate = null;
@@ -385,8 +404,21 @@ if (empty($err)) {
             }
 
             // Create / update the entry:
-            $new_id = mrbsCreateSingleEntry($starttime, $endtime, $entry_type, $repeat_id, $room_id,
-                                            $create_by, $name, $type, $description, $id, $roomchange);
+            $new_id = mrbsCreateSingleEntry(
+                $starttime,
+                $endtime,
+                $entry_type,
+                $repeat_id,
+                $room_id,
+                $create_by,
+                $name,
+                $type,
+                $description,
+                $id,
+                $roomchange,
+                $destination,
+                $passengers
+            );
 
             $sql = "SELECT r.id, r.room_name, r.area_id, a.area_name ";
             $sql .= "FROM {block_mrbs_room} r, {block_mrbs_area} a ";
@@ -468,6 +500,9 @@ if (strlen($err)) {
         echo '<input type="hidden" name="duration" value="'.$duration.'" />';
         echo '<input type="hidden" name="dur_units" value="'.$dur_units.'" />';
         echo '<input type="hidden" name="type" value="'.$type.'" />';
+        echo '<input type="hidden" name="destination" value="'.$destination.'" />';
+        echo '<input type="hidden" name="passengers" value="'.$passengers.'" />';
+
         foreach ($rooms as $room) {
             echo '<input type="hidden" name="rooms[]" value="'.$room.'" />';
         }

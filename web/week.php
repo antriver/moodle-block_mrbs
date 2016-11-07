@@ -144,8 +144,10 @@ if ($area_list_format == "select") {
 if ($pview != 1) {
     echo "</td>\n";
 
-    // Show all rooms in the current area
-    echo "<td width=\"30%\"><u>".get_string('rooms', 'block_mrbs')."</u><br>";
+    // Show all rooms in the current area.
+    echo "<td width=\"30%\"><em>".
+        ($area == MRBS_VEHICLE_AREA ? get_string('vehicles', 'block_mrbs') : get_string('rooms', 'block_mrbs')).
+        "</em><br>";
 }
 
 // should we show a drop-down for the room list, or not?

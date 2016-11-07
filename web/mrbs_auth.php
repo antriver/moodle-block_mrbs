@@ -66,7 +66,7 @@ function getWritable($creator, $user) {
         return 1;
     }
 
-    // Unathorised access
+    // Unathorised access.
     return 0;
 }
 
@@ -80,7 +80,38 @@ function showAccessDenied($day, $month, $year, $area) {
     global $OUTPUT;
 
     print_header_mrbs($day, $month, $year, $area);
-    echo $OUTPUT->box(get_string('accessdenied', 'block_mrbs').'<br/>'.get_string('norights', 'block_mrbs'), 'generalbox boxaligncenter');
+    echo $OUTPUT->box(
+        get_string('accessdenied', 'block_mrbs').'<br/>'.get_string('norights', 'block_mrbs'),
+        'generalbox boxaligncenter'
+    );
     echo '<br/>';
+    echo $OUTPUT->footer();
+}
+
+function requireVehicleAccess()
+{
+    if (!canBookVehicles()) {
+        showVehicleAccessDenied();
+        die();
+    }
+}
+
+function canBookVehicles()
+{
+    global $CFG, $DB, $USER;
+    require_once($CFG->dirroot.'/cohort/lib.php');
+    $cohort = $DB->get_record('cohort', array('idnumber' => 'MRBSVEHICLEBOOKERS'));
+    return cohort_is_member($cohort->id, $USER->id);
+}
+
+function showVehicleAccessDenied()
+{
+    global $OUTPUT;
+    print_header_mrbs(null, null, null, null);
+
+    echo '<br/><div class="box errorbox">'
+        . '<p class="errormessage">Sorry, but you do not currently have permission to do that (Make vehicle bookings)</p>'
+        . '</div>';
+
     echo $OUTPUT->footer();
 }

@@ -69,6 +69,9 @@ if (!empty($minute)) {
     $thisurl->param('minute', $minute);;
 }
 
+// Redirect to vehicles form if this areas is the vehicles area.
+redirect_to_booking_form($area, false);
+
 $PAGE->set_url($thisurl);
 require_login();
 
@@ -192,6 +195,13 @@ if ($room_id == 0) {
     }
 }
 
+// Determine the area id of the room in question first.
+$area_id = $DB->get_field('block_mrbs_room', 'area_id', array('id'=>$room_id), MUST_EXIST);
+redirect_to_booking_form($area_id, false);
+
+// Determine if there is more than one area.
+$areas = $DB->get_records_sql("SELECT * FROM {block_mrbs_area} WHERE area_name != 'Vehicles' ORDER BY area_name");
+
 // If we have not been provided with starting time
 if (empty($start_hour) && $morningstarts < 10) {
     $start_hour = "0$morningstarts";
@@ -239,6 +249,9 @@ print_header_mrbs($day, $month, $year, $area);
 
 ?>
 <SCRIPT LANGUAGE="JavaScript">
+
+    var vehicle_area_id = '<?=MRBS_VEHICLE_AREA?>';
+    var on_vehicle_page = false;
 
     <?php
     echo 'var currentroom='.$room_id.';';
@@ -325,7 +338,7 @@ print_header_mrbs($day, $month, $year, $area);
 
 <H2><?php echo $id ? ($edit_type == "series" ? get_string('editseries', 'block_mrbs') : get_string('editentry', 'block_mrbs')) : get_string('addentry', 'block_mrbs'); ?></H2>
 
-<FORM NAME="main" ACTION="edit_entry_handler.php" METHOD="GET">
+<FORM NAME="main" ACTION="edit_entry_handler.php" METHOD="GET" id="mrbsform">
     <input type="hidden" name="sesskey" value="<?php echo sesskey(); ?>">
 
     <TABLE BORDER=0>
@@ -438,7 +451,6 @@ print_header_mrbs($day, $month, $year, $area);
         // if there is more than one area then give the option
         // to choose areas.
         if (count($areas) > 1) {
-
             ?>
             <script language="JavaScript">
                 <!--
@@ -461,6 +473,9 @@ print_header_mrbs($day, $month, $year, $area);
                 print "this.document.writeln(\"            <option  value=\\\"IT\\\">".get_string('computerrooms', 'block_mrbs')."\")\n";
                 ?>
                 this.document.writeln("          </select>");
+
+                this.document.writeln('To book a vehicle please <a href="edit_vehicle_entry.php">click here</a>.');
+
                 this.document.writeln("</td></tr>");
                 // -->
             </script>

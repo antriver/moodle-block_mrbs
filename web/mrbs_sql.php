@@ -152,13 +152,28 @@ function mrbsDelEntry($user, $id, $series, $all, $roomadminoverride = false) {
  * $type        - Type (Internal/External)
  * $description - Description
  * $oldid       - Id of the entry to update (0 for create new)
+ * $destination - For vehicle bookings
+ * $passengers  - For vehicle bookings
  *
  * Returns:
  *   0        - An error occured while inserting the entry
  *   non-zero - The entry's ID
  */
-function mrbsCreateSingleEntry($starttime, $endtime, $entry_type, $repeat_id, $room_id,
-                               $owner, $name, $type, $description, $oldid = 0, $roomchange = false) {
+function mrbsCreateSingleEntry(
+    $starttime,
+    $endtime,
+    $entry_type,
+    $repeat_id,
+    $room_id,
+    $owner,
+    $name,
+    $type,
+    $description,
+    $oldid = 0,
+    $roomchange = false,
+    $destination = null,
+    $passengers = null
+) {
     global $DB;
 
     $add = new stdClass;
@@ -173,6 +188,10 @@ function mrbsCreateSingleEntry($starttime, $endtime, $entry_type, $repeat_id, $r
     $add->description = $description;
     $add->timestamp = time();
     $add->roomchange = $roomchange;
+
+    // For vehicle bookings.
+    $add->destination = $destination;
+    $add->passengers = $passengers;
 
     // make sure that any entry is of a positive duration
     // this is to trap potential negative duration created when DST comes
@@ -204,13 +223,29 @@ function mrbsCreateSingleEntry($starttime, $endtime, $entry_type, $repeat_id, $r
  * $name        - Name
  * $type        - Type (Internal/External)
  * $description - Description
+ * $destination - For vehicle bookings
+ * $passengers  - For vehicle bookings
  *
  * Returns:
  *   0        - An error occured while inserting the entry
  *   non-zero - The entry's ID
  */
-function mrbsCreateRepeatEntry($starttime, $endtime, $rep_type, $rep_enddate, $rep_opt,
-                               $room_id, $owner, $name, $type, $description, $rep_num_weeks, $oldrepeatid = 0) {
+function mrbsCreateRepeatEntry(
+    $starttime,
+    $endtime,
+    $rep_type,
+    $rep_enddate,
+    $rep_opt,
+    $room_id,
+    $owner,
+    $name,
+    $type,
+    $description,
+    $rep_num_weeks,
+    $oldrepeatid = 0,
+    $destination = null,
+    $passengers = null
+) {
     global $DB;
 
     $add = new stdClass;
@@ -225,6 +260,10 @@ function mrbsCreateRepeatEntry($starttime, $endtime, $rep_type, $rep_enddate, $r
     $add->type = $type;
     $add->name = $name;
     $add->timestamp = time();
+
+    // For vehicle bookings.
+    $add->destination = $destination;
+    $add->passengers = $passengers;
 
     // Optional things, pgsql doesn't like empty strings!
     if (!empty($rep_opt)) {
@@ -412,8 +451,23 @@ function mrbsGetRepeatEntryList($time, $enddate, $rep_type, $rep_opt, $max_ittr,
  *   0        - An error occured while inserting the entry
  *   non-zero - The entry's ID
  */
-function mrbsCreateRepeatingEntrys($starttime, $endtime, $rep_type, $rep_enddate, $rep_opt,
-                                   $room_id, $owner, $name, $type, $description, $rep_num_weeks, $roomchange = false, $oldid = 0) {
+function mrbsCreateRepeatingEntrys(
+    $starttime,
+    $endtime,
+    $rep_type,
+    $rep_enddate,
+    $rep_opt,
+    $room_id,
+    $owner,
+    $name,
+    $type,
+    $description,
+    $rep_num_weeks,
+    $roomchange = false,
+    $oldid = 0,
+    $destination = null,
+    $passengers = null
+) {
     global $max_rep_entrys, $DB;
 
     $ret = new stdClass;
@@ -440,7 +494,7 @@ function mrbsCreateRepeatingEntrys($starttime, $endtime, $rep_type, $rep_enddate
             $DB->delete_records('block_mrbs_repeat', array('id' => $repeatid));
         }
 
-        $ret->id = mrbsCreateSingleEntry($starttime, $endtime, 0, 0, $room_id, $owner, $name, $type, $description, $oldid, $roomchange);
+        $ret->id = mrbsCreateSingleEntry($starttime, $endtime, 0, 0, $room_id, $owner, $name, $type, $description, $oldid, $roomchange, $destination, $passengers);
         $ret->repeating = 0;
         $ret->requested = 1;
         $ret->created = 1;
@@ -448,7 +502,7 @@ function mrbsCreateRepeatingEntrys($starttime, $endtime, $rep_type, $rep_enddate
         return $ret;
     }
 
-    $ret->id = mrbsCreateRepeatEntry($starttime, $endtime, $rep_type, $rep_enddate, $rep_opt, $room_id, $owner, $name, $type, $description, $rep_num_weeks, $repeatid);
+    $ret->id = mrbsCreateRepeatEntry($starttime, $endtime, $rep_type, $rep_enddate, $rep_opt, $room_id, $owner, $name, $type, $description, $rep_num_weeks, $repeatid, $destination, $passengers);
 
     if ($ret->id) {
         $oldids = array();

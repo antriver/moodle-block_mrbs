@@ -11,7 +11,10 @@ function updateFreeRooms() {
     var year = yearInput[2].options[yearInput[2].selectedIndex].value;
 
     var periodInput = document.getElementsByName('period');
-    var period = periodInput[0].selectedIndex;
+    var period = 0;
+    if (periodInput.length > 0) {
+        period = periodInput[0].selectedIndex;
+    }
 
     var durationInput = document.getElementsByName('duration');
     var duration = durationInput[0].value;
@@ -21,7 +24,9 @@ function updateFreeRooms() {
 
     var areasInput = document.getElementsByName('areas');
     var area = 0;
-    if (areasInput.length) {
+    if (on_vehicle_page) {
+        area = vehicle_area_id;
+    } else if (areasInput.length) {
         area = areasInput[0].options[areasInput[0].selectedIndex].value;
     }
 
