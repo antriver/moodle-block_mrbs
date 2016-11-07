@@ -69,9 +69,6 @@ if (!empty($minute)) {
     $thisurl->param('minute', $minute);
 }
 
-// Redirect to vehicles form if this areas is the vehicles area.
-redirect_to_booking_form($area, false);
-
 $PAGE->set_url($thisurl);
 require_login();
 
@@ -79,6 +76,9 @@ if (!getAuthorised(1)) {
     showAccessDenied($day, $month, $year, $area);
     exit;
 }
+
+// Redirect to vehicles form if this areas is the vehicles area.
+redirect_to_booking_form($area, false);
 
 // This page will either add or modify a booking
 

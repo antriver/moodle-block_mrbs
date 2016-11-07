@@ -54,6 +54,9 @@ if ($enable_periods) {
         $dur_units = "periods";
         $duration = $max_periods + ($duration - 1) * 60 * 24;
     }
+} else {
+    $hour = 0;
+    $minute = 0;
 }
 
 // Units start in seconds
@@ -150,18 +153,7 @@ if (!empty($rooms)) {
     foreach ($rooms as $room) {
         if (allowed_to_book($USER, $room)) {
             $info = array();
-            $desc = trim(s($room->description));
-            if ($desc) {
-                $info[] = $desc;
-            }
-            if ($room->capacity) {
-                $info[] = $room->capacity;
-            }
-            if ($info) {
-                $info = ' ('.implode(', ', $info).')';
-            } else {
-                $info = '';
-            }
+            $info = " (".s($room->description)." Capacity:$room->capacity)";
             $list .= $room->id.','.$room->room_name.$info."\n";
         }
     }

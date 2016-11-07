@@ -214,6 +214,7 @@ $string['monthbefore']        = 'Go To Month Before';
 $string['movedto']        = ' moved to';
 $string['mrbs:addinstance'] = 'Add MRBS block to My Moodle page';
 $string['mrbs:administermrbs'] = 'Modify MRBS rooms + settings';
+$string['mrbs:bookvehicle'] = 'Book vehicles in MRBS';
 $string['mrbs:editmrbs'] = 'Edit MRBS bookings';
 $string['mrbs:doublebook'] = 'Double Book Rooms';
 $string['mrbs:editmrbsunconfirmed'] = 'Only create \'unconfirmed\' bookings (overriden by \'editmrbs\')';

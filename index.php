@@ -58,7 +58,7 @@ echo print_header_mrbs(null, null, null, null);
 
 </div>
 
-<?php if (canBookVehicles()) { ?>
+<?php if (has_capability('block/mrbs:bookvehicles', context_system::instance())) { ?>
 <div class="mrbsCol">
 
 	<h2><i class="fa fa-car"></i> To Book A Vehicle...</h2>
