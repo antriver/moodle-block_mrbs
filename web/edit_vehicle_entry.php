@@ -613,7 +613,7 @@ $(document).ready(updatePassengerCapacity);
     <td></td>
 </tr>
 
-<? /*
+<?php /*
 <TR>
     <TD CLASS=CR><B><?php echo get_string('type', 'block_mrbs') ?></B></TD>
     <TD CLASS=CL><SELECT NAME="type">
