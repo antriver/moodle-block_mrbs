@@ -194,5 +194,83 @@ function xmldb_block_mrbs_upgrade($oldversion=0) {
         upgrade_block_savepoint(true, 2016101700, 'mrbs');
     }
 
+
+    if ($oldversion < 2017011401) {
+
+        // Define table block_mrbs_types to be created.
+        $table = new xmldb_table('block_mrbs_types');
+
+        // Adding fields to table block_mrbs_types.
+        $table->add_field('id', XMLDB_TYPE_INTEGER, '11', null, XMLDB_NOTNULL, XMLDB_SEQUENCE, null);
+        $table->add_field('name', XMLDB_TYPE_TEXT, null, null, XMLDB_NOTNULL, null, null);
+
+        // Adding keys to table block_mrbs_types.
+        $table->add_key('primary', XMLDB_KEY_PRIMARY, array('id'));
+
+        // Conditionally launch create table for block_mrbs_types.
+        if (!$dbman->table_exists($table)) {
+            $dbman->create_table($table);
+        }
+
+        // Define table block_mrbs_type_questions to be created.
+        $table = new xmldb_table('block_mrbs_type_questions');
+
+        // Adding fields to table block_mrbs_type_questions.
+        $table->add_field('id', XMLDB_TYPE_INTEGER, '11', null, XMLDB_NOTNULL, XMLDB_SEQUENCE, null);
+        $table->add_field('type_id', XMLDB_TYPE_INTEGER, '20', null, XMLDB_NOTNULL, null, null);
+        $table->add_field('question', XMLDB_TYPE_TEXT, null, null, XMLDB_NOTNULL, null, null);
+        $table->add_field('input_type', XMLDB_TYPE_TEXT, null, null, XMLDB_NOTNULL, null, null);
+
+        // Adding keys to table block_mrbs_type_questions.
+        $table->add_key('primary', XMLDB_KEY_PRIMARY, array('id'));
+
+        // Conditionally launch create table for block_mrbs_type_questions.
+        if (!$dbman->table_exists($table)) {
+            $dbman->create_table($table);
+        }
+
+        // Define table block_mrbs_entry_responses to be created.
+        $table = new xmldb_table('block_mrbs_entry_responses');
+
+        // Adding fields to table block_mrbs_entry_responses.
+        $table->add_field('id', XMLDB_TYPE_INTEGER, '11', null, XMLDB_NOTNULL, XMLDB_SEQUENCE, null);
+        $table->add_field('entry_id', XMLDB_TYPE_INTEGER, '11', null, XMLDB_NOTNULL, null, null);
+        $table->add_field('question_id', XMLDB_TYPE_INTEGER, '11', null, XMLDB_NOTNULL, null, null);
+        $table->add_field('response', XMLDB_TYPE_TEXT, null, null, null, null, null);
+
+        // Adding keys to table block_mrbs_entry_responses.
+        $table->add_key('primary', XMLDB_KEY_PRIMARY, array('id'));
+        $table->add_key('entry_id', XMLDB_KEY_FOREIGN, array('entry_id'), 'block_mrbs_entries', array('id'));
+        $table->add_key('question_id', XMLDB_KEY_FOREIGN, array('question_id'), 'block_mrbs_type_questions', array('id'));
+
+        // Conditionally launch create table for block_mrbs_entry_responses.
+        if (!$dbman->table_exists($table)) {
+            $dbman->create_table($table);
+        }
+
+        // Define table block_mrbs_room_types to be created.
+        $table = new xmldb_table('block_mrbs_room_types');
+
+        // Adding fields to table block_mrbs_room_types.
+        $table->add_field('id', XMLDB_TYPE_INTEGER, '11', null, XMLDB_NOTNULL, XMLDB_SEQUENCE, null);
+        $table->add_field('room_id', XMLDB_TYPE_INTEGER, '11', null, XMLDB_NOTNULL, null, null);
+        $table->add_field('type_id', XMLDB_TYPE_INTEGER, '11', null, XMLDB_NOTNULL, null, null);
+
+        // Adding keys to table block_mrbs_room_types.
+        $table->add_key('primary', XMLDB_KEY_PRIMARY, array('id'));
+        $table->add_key('room_id', XMLDB_KEY_FOREIGN, array('room_id'), 'block_mrbs_room', array('id'));
+        $table->add_key('type_id', XMLDB_KEY_FOREIGN, array('type_id'), 'block_mrbs_room_types', array('id'));
+
+        // Conditionally launch create table for block_mrbs_room_types.
+        if (!$dbman->table_exists($table)) {
+            $dbman->create_table($table);
+        }
+
+        // Mrbs savepoint reached.
+        upgrade_block_savepoint(true, 2017011401, 'mrbs');
+    }
+
+
+
     return true;
 }
