@@ -28,8 +28,7 @@ function print_user_header_mrbs($day = null, $month = null, $year = null, $area 
     print_header_mrbs($day, $month, $year, $area, true);
 }
 
-function print_header_mrbs($day = null, $month = null, $year = null, $area = null, $userview = false) //if values are not passed assume NULL
-{
+function print_header_mrbs($day = null, $month = null, $year = null, $area = null, $userview = false) {
     global $search_str, $locale_warning, $pview;
     global $OUTPUT, $PAGE, $USER;
     global $javascript_cursor;
@@ -76,20 +75,20 @@ function print_header_mrbs($day = null, $month = null, $year = null, $area = nul
 
     // Set the weekday names for the 'ChangeOptionDays' function
     echo '<script type="text/javascript">SetWeekDayNames(';
-    echo '"'.get_string('mon', 'calendar').'", ';
-    echo '"'.get_string('tue', 'calendar').'", ';
-    echo '"'.get_string('wed', 'calendar').'", ';
-    echo '"'.get_string('thu', 'calendar').'", ';
-    echo '"'.get_string('fri', 'calendar').'", ';
-    echo '"'.get_string('sat', 'calendar').'", ';
-    echo '"'.get_string('sun', 'calendar').'"';
+    echo '"' . get_string('mon', 'calendar') . '", ';
+    echo '"' . get_string('tue', 'calendar') . '", ';
+    echo '"' . get_string('wed', 'calendar') . '", ';
+    echo '"' . get_string('thu', 'calendar') . '", ';
+    echo '"' . get_string('fri', 'calendar') . '", ';
+    echo '"' . get_string('sat', 'calendar') . '", ';
+    echo '"' . get_string('sun', 'calendar') . '"';
     echo ');</script>';
 
     echo '<div id="mrbscontainer">';
 
     if ($pview != 1) {
         if (!empty($locale_warning)) {
-            echo "[Warning: ".$locale_warning."]";
+            echo "[Warning: " . $locale_warning . "]";
         }
 
         $titlestr = get_string('mrbs', 'block_mrbs');
@@ -120,74 +119,65 @@ function print_header_mrbs($day = null, $month = null, $year = null, $area = nul
         $level = authGetUserLevel($USER->id);
         $canadmin = $level >= 2;
 
-        echo <<<HTML1END
+        ?>
+        <div id="mrbs-header">
+            <a href="<?=$homeurl?>"><?=$titlestr?></a>
 
-    <TABLE WIDTH="100%" class="banner" >
-      <TR>
-        <TD BGCOLOR="#5B69A6">
-          <TABLE WIDTH="100%" BORDER=0>
-            <TR>
-              <TD CLASS="banner" BGCOLOR="#C0E0FF">
-          <FONT SIZE=4>
-           <A HREF="$homeurl">$titlestr</A>
-                </FONT>
-              </TD>
-              <TD CLASS="banner" BGCOLOR="#C0E0FF">
-                <FORM ACTION="$gotourl" METHOD=GET name="Form1">
-                  <FONT SIZE=2>
-HTML1END;
+            <form action="<?=$gotourl?>" method="get" name="mrbs_header_cal">
 
-        genDateSelector("", $day, $month, $year); // Note: The 1st arg must match the last arg in the call to ChangeOptionDays below.
-        if (!empty($area)) {
-            echo "<INPUT TYPE=HIDDEN NAME=area VALUE=$area>\n";
-        }
+                <?php
+                // Note: The 1st arg must match the last arg in the call to ChangeOptionDays below.
+                genDateSelector("", $day, $month, $year);
 
-        echo <<<HTML2END
-                <SCRIPT LANGUAGE="JavaScript">
-                    <!--
-                    // fix number of days for the $month/$year that you start with
-                    ChangeOptionDays(document.Form1, ''); // Note: The 2nd arg must match the first in the call to genDateSelector above.
-                    // -->
-                    </SCRIPT>
-        <INPUT TYPE=SUBMIT VALUE="$gotostr">
-                  </FONT>
-                </FORM>
-              </TD>
-HTML2END;
-        if (!$userview) {
-            if (has_capability("block/mrbs:forcebook", $context)) {
-                echo '<TD CLASS="banner" BGCOLOR="#C0E0FF" ALIGN=CENTER>
-                  <a href="edit_entry.php?force=TRUE">'.get_string('forciblybook', 'block_mrbs').'</a>
-              </TD>';
+                if (!empty($area)) {
+                    echo '<input type="hidden" name="area" value="'.$area.'">';
+                }
+                ?>
+
+                <script>
+                // fix number of days for the $month/$year that you start with
+                // Note: The 2nd arg must match the first in the call to genDateSelector above.
+                ChangeOptionDays(document.mrbs_header_cal, '');
+                </script>
+
+                <input type="submit" value="<?=$gotostr?>" />
+            </form>
+
+            <?php
+
+            if (!$userview) {
+                if (has_capability("block/mrbs:forcebook", $context)) {
+                    echo '<a href="edit_entry.php?force=TRUE">' . get_string('forciblybook', 'block_mrbs') . '</a>';
+                }
+
+                echo '<a target="popup" 
+                         title="' . $roomsearchstr . '" 
+                         href="' . $roomsearchurl . '" 
+                         onclick="this.target=\'popup\'; return openpopup(\'' . $roomsearchurl . '\', \'popup\', \'toolbar=1,location=0,scrollbars,resizable,width=500,height=400\', 0);">';
+                echo $roomsearchstr;
+                echo '</a>';
             }
 
-            echo '<TD CLASS="banner" BGCOLOR="#C0E0FF" ALIGN=CENTER>';
-            echo '<a target="popup" title="'.$roomsearchstr.'" href="'.$roomsearchurl.'" ';
-            echo 'onclick="this.target=\'popup\'; return openpopup(\''.$roomsearchurl.'\', \'popup\', \'toolbar=1,location=0,scrollbars,resizable,width=500,height=400\', 0);">';
-            echo $roomsearchstr.'</a></TD>';
+            echo '<a href="' . $helpurl . '">' . $helpstr . '</a>';
 
-        } // !$userview
-
-        echo '<TD CLASS="banner" BGCOLOR="#C0E0FF" ALIGN=CENTER><A HREF="'.$helpurl.'">'.$helpstr.'</A></TD>';
-
-        if (!$userview) {
-            if ($canadmin) {
-                echo '<TD CLASS="banner" BGCOLOR="#C0E0FF" ALIGN=CENTER><A HREF="'.$adminurl.'">'.$adminstr.'</A></TD>';
+            if (!$userview) {
+                if ($canadmin) {
+                    echo '<a href="' . $adminurl . '">' . $adminstr . '</a>';
+                }
+                echo '<a href="' . $reporturl . '">' . $reportstr . '</a>';
+                echo '<form method="get" action="' . $searchurl . '">';
+                echo '<a href="' . $searchadvurl . '">' . $searchstr . '</a>
+                      <input type="text" name="search_str" value="' . $search_str . '" />
+                      <input type="hidden" name="day" value="' . $day . '" />
+                      <input type="hidden" name="month" value="' . $month . '" />
+                      <input type="hidden" name="year" value="' . $year . '" />';
+                if (!empty($area)) {
+                    echo '<input type="hidden" name="area" value="'.$area.'" />';
+                }
+                echo '</form>';
             }
-            echo '<TD CLASS="banner" BGCOLOR="#C0E0FF" ALIGN=CENTER><A HREF="'.$reporturl.'">'.$reportstr.'</A></TD>';
-            echo '<TD CLASS="banner" BGCOLOR="#C0E0FF" ALIGN=CENTER><FORM METHOD=GET ACTION="'.$searchurl.'">';
-            echo '<FONT SIZE=2><A HREF="'.$searchadvurl.'">'.$searchstr.'</A></FONT>
-                  <INPUT TYPE=TEXT   NAME="search_str" VALUE="'.$search_str.'" SIZE=10>
-                  <INPUT TYPE=HIDDEN NAME=day        VALUE="'.$day.'"        >
-                  <INPUT TYPE=HIDDEN NAME=month      VALUE="'.$month.'"        >
-                  <INPUT TYPE=HIDDEN NAME=year       VALUE="'.$year.'"        >';
-            if (!empty($area)) {
-                echo "<INPUT TYPE=HIDDEN NAME=area VALUE=$area>\n";
-            }
-            echo '</FORM></TD>';
-        } // !$userview
 
-        echo '</TR> </TABLE> </TD> </TR> </TABLE>';
+        echo '</div>';
     }
 }
 

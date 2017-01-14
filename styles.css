@@ -91,3 +91,23 @@ top:12}
 
 #mrbscontainer TD.month {font-size: 8pt; background-color:#FFFFFF}
 #mrbscontainer .monthday {font-size: 12pt; vertical-align: top; text-align: left}
+
+#mrbs-header {
+    border:1px #5B69A6 solid;
+    background: #C0E0FF;
+    padding:5px;
+}
+
+#mrbs-header form,
+#mrbs-header a {
+    margin: 0 5px;
+}
+
+#mrbs-header a {
+    line-height:30px;
+}
+
+#mrbs-header form {
+    display: inline-block;
+    height: 30px;
+}
