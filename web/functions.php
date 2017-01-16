@@ -84,15 +84,17 @@ function print_header_mrbs($day = null, $month = null, $year = null, $area = nul
     echo '"' . get_string('sun', 'calendar') . '"';
     echo ');</script>';
 
-    echo '<div id="mrbscontainer">';
+    echo '<div id="mrbs-container">';
+
+    $titlestr = get_string('mrbs', 'block_mrbs');
+    $homeurl = new moodle_url('/blocks/mrbs/web/index.php');
+
+    echo '<a href="'.$homeurl.'"><h2>'.$titlestr.'</h2></a>';
 
     if ($pview != 1) {
         if (!empty($locale_warning)) {
             echo "[Warning: " . $locale_warning . "]";
         }
-
-        $titlestr = get_string('mrbs', 'block_mrbs');
-        $homeurl = new moodle_url('/blocks/mrbs/web/index.php');
 
         $gotostr = get_string('goto', 'block_mrbs');
         $gotourl = new moodle_url('/blocks/mrbs/web/day.php');
@@ -121,8 +123,6 @@ function print_header_mrbs($day = null, $month = null, $year = null, $area = nul
 
         ?>
         <div id="mrbs-header">
-            <a href="<?=$homeurl?>"><?=$titlestr?></a>
-
             <form action="<?=$gotourl?>" method="get" name="mrbs_header_cal">
 
                 <?php
@@ -165,7 +165,8 @@ function print_header_mrbs($day = null, $month = null, $year = null, $area = nul
                     echo '<a href="' . $adminurl . '">' . $adminstr . '</a>';
                 }
                 echo '<a href="' . $reporturl . '">' . $reportstr . '</a>';
-                echo '<form method="get" action="' . $searchurl . '">';
+
+                echo '<form class="search-form" method="get" action="' . $searchurl . '">';
                 echo '<a href="' . $searchadvurl . '">' . $searchstr . '</a>
                       <input type="text" name="search_str" value="' . $search_str . '" />
                       <input type="hidden" name="day" value="' . $day . '" />
@@ -177,8 +178,64 @@ function print_header_mrbs($day = null, $month = null, $year = null, $area = nul
                 echo '</form>';
             }
 
+        echo '<div class="clear"></div>';
         echo '</div>';
     }
+}
+
+function print_utils_mrbs($area, $year, $month, $day, $area_list_format, $roomnotfound, $baseurl) {
+    global $DB;
+
+    echo '<div id="mrbs-jump" class="clearfix">';
+
+    echo '<div class="areas">';
+    //Show all available areas
+    echo "<h3>".get_string('areas', 'block_mrbs')."</h3>";
+
+    // need to show either a select box or a normal html list,
+    // depending on the settings in config.inc.php
+    if ($area_list_format == "select") {
+        echo make_area_select_html(new moodle_url('/blocks/mrbs/web/day.php'), $area, $year, $month, $day); // from functions.php
+    } else {
+        // show the standard html list
+        $areas = $DB->get_records('block_mrbs_area', null, 'area_name');
+        foreach ($areas as $dbarea) {
+            echo '<a href="'.($baseurl->out(true, array('area' => $dbarea->id))).'">';
+            if ($dbarea->id == $area) {
+                echo "<font color=\"red\">".s($dbarea->area_name)."</font></a><br>\n";
+            } else {
+                echo s($dbarea->area_name)."</a><br>\n";
+            }
+        }
+    }
+
+    echo '</div>';
+
+    echo '<div class="find-room">';
+    //insert the goto room form
+    $gotoroom = new moodle_url('/blocks/mrbs/web/gotoroom.php');
+    $gostr = get_string('goroom', 'block_mrbs');
+    $gotoval = '';
+    $gotomsg = '';
+    if ($roomnotfound) {
+        $gotoval = $roomnotfound;
+        $gotomsg = ' '.get_string('noroomsfound', 'block_mrbs');
+    }
+    echo "<h3>".get_string('findroom', 'block_mrbs')."</h3>
+        <form action='$gotoroom' method='get'>
+            <input type='text' name='room' value='$gotoval'>
+            <input type='hidden' name='day' value='$day'>
+            <input type='hidden' name='month' value='$month'>
+            <input type='hidden' name='year' value='$year'>
+            <input type='submit' value='$gostr'>$gotomsg
+        </form>";
+
+    echo '</div>';
+
+    //Draw the three month calendars
+    minicals($year, $month, $day, $area, '', 'day');
+
+    echo '</div>';
 }
 
 function toTimeString(&$dur, &$units) {

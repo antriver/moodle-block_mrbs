@@ -1,113 +1,321 @@
 /*
-    Document   : styles.css
-    Created on : Jun 6, 2010, 6:57:02 PM
-    Author     : sbourget
-    Description:
-        Purpose of the stylesheet follows.
+    document   : styles.css
+    created on : jun 6, 2010, 6:57:02 pm
+    author     : sbourget
+    description:
+        purpose of the stylesheet follows.
 */
 
-#mrbscontainer {color:black; font-size: 10pt; font-family:arial,sans-serif; overflow: auto; padding: 1px;}
+.clear {
+    clear:both;
+}
 
-#mrbscontainer A:link {color:#5B69A6; font-weight: bold; text-decoration: none}
-#mrbscontainer A:visited {color:#5B69A6; font-weight: bold; text-decoration: none}
-#mrbscontainer A:hover {color:red; text-decoration:underline}
-#mrbscontainer H1 {color:black; font-family:verdana,sans-serif; font-size:16pt}
-#mrbscontainer H2 {color:black; font-family:verdana,sans-serif; font-size:14pt}
-#mrbscontainer H3 {font-family:verdana,sans-serif; font-size:12pt}
+#mrbs-container {
+    color: black;
+    font-size: 10pt;
+    font-family: arial, sans-serif;
+    overflow: auto;
+    padding: 1px;
+}
 
-#mrbscontainer table {margin-bottom: 0; }
+#mrbs-container a {
+    color: #5b69a6;
+    text-decoration: none;
+}
 
-#mrbscontainer TD {font-size:10pt; font-family:arial,sans-serif;
-vertical-align:top; padding: 1px;}
-#mrbscontainer TD.border {border-width: 1px; padding: 3px;}
-#mrbscontainer TD.header {color:black; font-family:verdana,sans-serif; border-width:0;
-background-color:#ffffdd; font-size:26pt}
+#mrbs-container a:hover {
+    text-decoration: underline
+}
 
-#mrbscontainer TD.CR { vertical-align: middle; text-align: right}
-#mrbscontainer TD.CL { vertical-align: middle; text-align: left}
-#mrbscontainer TD.BR { vertical-align: baseline; text-align: right}
-#mrbscontainer TD.BL { vertical-align: baseline; text-align: left}
-#mrbscontainer TD.TR { vertical-align: top; text-align: right}
-#mrbscontainer TD.TL { vertical-align: top; text-align: left}
+#mrbs-container h1,
+#mrbs-container h2,
+#mrbs-container h3 {
+    color: #333;
+}
 
-#mrbscontainer td form { margin:0; } /* Prevent IE from displaying margins around forms in tables. */
+#mrbs-container table {
+    margin-bottom: 0;
+}
 
-#mrbscontainer TD.unallocated {color:gray}
-#mrbscontainer TD.allocated {color:black}
-#mrbscontainer A:link.unallocated {color:#9BA9E6}
-#mrbscontainer A:link.allocated {color:#5B69A6}
+#mrbs-container td {
+    font-size: 10pt;
+    font-family: arial, sans-serif;
+    vertical-align: top;
+    padding: 1px;
+}
 
-#mrbscontainer A:hover.unallocated {color:red}
-#mrbscontainer A:hover.allocated {color:red}
+#mrbs-container td.border {
+    border-width: 1px;
+    padding: 3px;
+}
 
-#mrbscontainer A.blue {color:blue}
-#mrbscontainer A:visited.blue {color:blue}
-#mrbscontainer A:hover.blue {color:red}
+#mrbs-container td.header {
+    color: black;
+    font-family: verdana, sans-serif;
+    border-width: 0;
+    background-color: #ffffdd;
+    font-size: 26pt
+}
 
-#mrbscontainer TH {color:#eeeeee; font-size:10pt; font-family:verdana,sans-serif;
-background-color:#999999;
-border-width:1; border-color:#999999; vertical-align:top; padding: 1px;}
-#mrbscontainer TD.banner {vertical-align:middle; background-color:#C0E0FF}
-#mrbscontainer TABLE.banner { margin-bottom: 1em; }
+#mrbs-container td.cr {
+    vertical-align: middle;
+    text-align: right
+}
 
-#mrbscontainer TD.blue {background-color:#F0F0FF}
-#mrbscontainer TD.red  {background-color:#FFF0F0}
-#mrbscontainer TD.green {background-color:#DDFFDD}
-#mrbscontainer TD.A {background-color:#FFCCFF}
-#mrbscontainer TD.B {background-color:#99CCCC}
-#mrbscontainer TD.C {background-color:#FF9999}
-#mrbscontainer TD.D {background-color:#FFFF99}
-#mrbscontainer TD.E {background-color:#C0E0FF}
-#mrbscontainer TD.F {background-color:#FFCC99}
-#mrbscontainer TD.G {background-color:#FF6666}
-#mrbscontainer TD.H {background-color:#66FFFF}
-#mrbscontainer TD.I {background-color:#DDFFDD}
-#mrbscontainer TD.J {background-color:#CCCCCC}
-#mrbscontainer TD.K {background-color:#CEA8F4}
-#mrbscontainer TD.L {background-color:#93EEAA}
-#mrbscontainer TD.U {background-color:#FF0000}
-#mrbscontainer TD.white {background-color:#FFFFFF}
-#mrbscontainer TD.DoubleBooked {background-color:#FF0000}
+#mrbs-container td.cl {
+    vertical-align: middle;
+    text-align: left
+}
 
-#mrbscontainer TD.calendar { border:0px; font-size: 8pt}
-#mrbscontainer TD.calendarHeader {border:0px; font-size: 10pt}
-#mrbscontainer FONT.calendarHighlight {color: red}
+#mrbs-container td.br {
+    vertical-align: baseline;
+    text-align: right
+}
 
-#mrbscontainer TD.even_row {background-color:#FFFFFF}	/* Even rows in the day view */
-#mrbscontainer TD.odd_row {background-color:#EEEEEE}	/* Odd rows in the day view */
+#mrbs-container td.bl {
+    vertical-align: baseline;
+    text-align: left
+}
 
-#mrbscontainer TD.highlight {background-color:#AABBFF; border-style:solid; border-width:1; border-color:#0000AA;} /* The highlighted cell under the cursor */
-#mrbscontainer .naked { margin: 0; padding: 0; border-width:0} /* Invisible tables used for internal needs */
+#mrbs-container td.tr {
+    vertical-align: top;
+    text-align: right
+}
 
-#mrbscontainer .sitename
-{font-size: 18px;
-font-style: normal;
-font-weight: bold;
-text-transform: none;
-color:#ffffff;
-position: absolute;
-left:30;
-top:12}
+#mrbs-container td.tl {
+    vertical-align: top;
+    text-align: left
+}
 
-#mrbscontainer TD.month {font-size: 8pt; background-color:#FFFFFF}
-#mrbscontainer .monthday {font-size: 12pt; vertical-align: top; text-align: left}
+#mrbs-container td form {
+    margin: 0;
+}
+
+/* prevent ie from displaying margins around forms in tables. */
+
+#mrbs-container td.unallocated {
+    color: gray
+}
+
+#mrbs-container td.allocated {
+    color: black
+}
+
+#mrbs-container a:link.unallocated {
+    color: #9ba9e6
+}
+
+#mrbs-container a:link.allocated {
+    color: #5b69a6
+}
+
+#mrbs-container a:hover.unallocated {
+    color: red
+}
+
+#mrbs-container a:hover.allocated {
+    color: red
+}
+
+#mrbs-container a.blue {
+    color: blue
+}
+
+#mrbs-container a:visited.blue {
+    color: blue
+}
+
+#mrbs-container a:hover.blue {
+    color: red
+}
+
+#mrbs-container th {
+    color: #eeeeee;
+    font-size: 10pt;
+    font-family: verdana, sans-serif;
+    background-color: #999999;
+    border-width: 1;
+    border-color: #999999;
+    vertical-align: top;
+    padding: 1px;
+}
+
+#mrbs-container td.banner {
+    vertical-align: middle;
+    background-color: #c0e0ff
+}
+
+#mrbs-container table.banner {
+    margin-bottom: 1em;
+}
+
+#mrbs-container td.blue {
+    background-color: #f0f0ff
+}
+
+#mrbs-container td.red {
+    background-color: #fff0f0
+}
+
+#mrbs-container td.green {
+    background-color: #ddffdd
+}
+
+#mrbs-container td.a {
+    background-color: #ffccff
+}
+
+#mrbs-container td.b {
+    background-color: #99cccc
+}
+
+#mrbs-container td.c {
+    background-color: #ff9999
+}
+
+#mrbs-container td.d {
+    background-color: #ffff99
+}
+
+#mrbs-container td.e {
+    background-color: #c0e0ff
+}
+
+#mrbs-container td.f {
+    background-color: #ffcc99
+}
+
+#mrbs-container td.g {
+    background-color: #ff6666
+}
+
+#mrbs-container td.h {
+    background-color: #66ffff
+}
+
+#mrbs-container td.i {
+    background-color: #ddffdd
+}
+
+#mrbs-container td.j {
+    background-color: #cccccc
+}
+
+#mrbs-container td.k {
+    background-color: #cea8f4
+}
+
+#mrbs-container td.l {
+    background-color: #93eeaa
+}
+
+#mrbs-container td.u {
+    background-color: #ff0000
+}
+
+#mrbs-container td.white {
+    background-color: #ffffff
+}
+
+#mrbs-container td.doublebooked {
+    background-color: #ff0000
+}
+
+#mrbs-container td.calendar {
+    border: 0px;
+    font-size: 8pt
+}
+
+#mrbs-container td.calendarheader {
+    border: 0px;
+    font-size: 10pt
+}
+
+#mrbs-container font.calendarhighlight {
+    color: red
+}
+
+#mrbs-container td.even_row {
+    background-color: #ffffff
+}
+
+/* even rows in the day view */
+#mrbs-container td.odd_row {
+    background-color: #eeeeee
+}
+
+/* odd rows in the day view */
+
+#mrbs-container td.highlight {
+    background-color: #aabbff;
+    border-style: solid;
+    border-width: 1;
+    border-color: #0000aa;
+}
+
+/* the highlighted cell under the cursor */
+#mrbs-container .naked {
+    margin: 0;
+    padding: 0;
+    border-width: 0
+}
+
+/* invisible tables used for internal needs */
+
+#mrbs-container .sitename {
+    font-size: 18px;
+    font-style: normal;
+    font-weight: bold;
+    text-transform: none;
+    color: #ffffff;
+    position: absolute;
+    left: 30;
+    top: 12
+}
+
+#mrbs-container td.month {
+    font-size: 8pt;
+    background-color: #ffffff
+}
+
+#mrbs-container .monthday {
+    font-size: 12pt;
+    vertical-align: top;
+    text-align: left
+}
 
 #mrbs-header {
-    border:1px #5B69A6 solid;
-    background: #C0E0FF;
-    padding:5px;
+    border: 1px #5b69a6 solid;
+    background: #c0e0ff;
+    padding: 5px;
 }
 
 #mrbs-header form,
 #mrbs-header a {
     margin: 0 5px;
-}
-
-#mrbs-header a {
-    line-height:30px;
-}
-
-#mrbs-header form {
-    display: inline-block;
+    float:left;
+    display: block;
     height: 30px;
+    line-height: 30px;
+}
+
+#mrbs-header .search-form {
+    float: right;
+}
+
+#mrbs-jump > div {
+    width:20%;
+}
+
+#mrbs-jump .calendar {
+    margin:10px;
+}
+
+#mrbs-jump > div,
+#mrbs-jump > table {
+    float:left;
+}
+
+.mrbs-admin-table {
+    width:100%;
 }

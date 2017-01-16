@@ -434,6 +434,6 @@ show_colour_key();
 
 //include "trailer.php";
 
-echo '</div>';  // Close 'mrbscontainer'
+echo '</div>';  // Close 'mrbs-container'
 
 echo $OUTPUT->footer();

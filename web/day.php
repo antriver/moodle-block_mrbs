@@ -87,50 +87,7 @@ $am7 = mktime($morningstarts, $morningstarts_minutes, 0, $month, $day, $year);
 $pm7 = mktime($eveningends, $eveningends_minutes, 0, $month, $day, $year);
 
 if ($pview != 1) {
-    echo "<table width=\"100%\"><tr><td width=\"40%\">";
-
-    //Show all avaliable areas
-    echo "<u>".get_string('areas', 'block_mrbs')."</u><br>";
-
-    // need to show either a select box or a normal html list,
-    // depending on the settings in config.inc.php
-    if ($area_list_format == "select") {
-        echo make_area_select_html(new moodle_url('/blocks/mrbs/web/day.php'), $area, $year, $month, $day); // from functions.php
-    } else {
-        // show the standard html list
-        $areas = $DB->get_records('block_mrbs_area', null, 'area_name');
-        foreach ($areas as $dbarea) {
-            echo '<a href="'.($baseurl->out(true, array('area' => $dbarea->id))).'">';
-            if ($dbarea->id == $area) {
-                echo "<font color=\"red\">".s($dbarea->area_name)."</font></a><br>\n";
-            } else {
-                echo s($dbarea->area_name)."</a><br>\n";
-            }
-        }
-    }
-    echo "</td>\n";
-
-    //insert the goto room form
-    $gotoroom = new moodle_url('/blocks/mrbs/web/gotoroom.php');
-    $gostr = get_string('goroom', 'block_mrbs');
-    $gotoval = '';
-    $gotomsg = '';
-    if ($roomnotfound) {
-        $gotoval = $roomnotfound;
-        $gotomsg = ' '.get_string('noroomsfound', 'block_mrbs');
-    }
-    echo "<td width=\"20%\"><h3>".get_string('findroom', 'block_mrbs')."</h3>
-        <form action='$gotoroom' method='get'>
-            <input type='text' name='room' value='$gotoval'>
-            <input type='hidden' name='day' value='$day'>
-            <input type='hidden' name='month' value='$month'>
-            <input type='hidden' name='year' value='$year'>
-            <input type='submit' value='$gostr'>$gotomsg
-        </form></td>";
-
-    //Draw the three month calendars
-    minicals($year, $month, $day, $area, '', 'day');
-    echo "</tr></table>";
+    print_utils_mrbs($area, $year, $month, $day, $area_list_format, $roomnotfound, $baseurl);
 }
 
 //y? are year, month and day of yesterday
@@ -251,7 +208,7 @@ if (!empty($area)) {
     // If there are none then show an error and dont bother doing anything
     // else
     if (empty($rooms)) {
-        echo "<h1>".get_string('no_rooms_for_area', 'block_mrbs')."</h1>";
+        echo '<div class="alert alert-danger">'.get_string('no_rooms_for_area', 'block_mrbs').'</div>';
     } else {
         //Show current date
         echo "<h2 align=center>".userdate($am7, "%A %d %B %Y")."</h2>\n";
@@ -281,6 +238,7 @@ if (!empty($area)) {
         }
 
         //This is where we start displaying stuff
+
         echo "<table cellspacing=0 border=1 width=\"100%\">";
         echo "<tr><th width=\"1%\">".($enable_periods ? get_string('period', 'block_mrbs') : get_string('time'))."</th>";
 

@@ -181,7 +181,7 @@ if ($pview != 1) {
 
 // Don't continue if this area has no rooms:
 if ($room <= 0) {
-    echo "<h1>".get_string('no_rooms_for_area', 'block_mrbs')."</h1>";
+    echo '<div class="alert alert-danger">'.get_string('no_rooms_for_area', 'block_mrbs').'</div>';
     include "trailer.php";
     exit;
 }

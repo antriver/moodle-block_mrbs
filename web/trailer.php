@@ -130,6 +130,6 @@ if ($pview != 1) {
 
 }
 
-echo '</div>';  // Close 'mrbscontainer'
+echo '</div>';  // Close 'mrbs-container'
 
 echo $OUTPUT->footer();
