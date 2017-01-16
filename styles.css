@@ -284,6 +284,11 @@
     text-align: left
 }
 
+#mrbs-container .cols > div {
+    width:50%;
+    float:left;
+}
+
 #mrbs-header {
     border: 1px #5b69a6 solid;
     background: #c0e0ff;

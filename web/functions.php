@@ -66,6 +66,7 @@ function print_header_mrbs($day = null, $month = null, $year = null, $area = nul
     $PAGE->set_heading(format_string($strmrbs));
 
     // Load extra javascript
+    $PAGE->requires->js('/blocks/mrbs/web/mrbs.js', true); // For the 'ChangeOptionDays' function
     $PAGE->requires->js('/blocks/mrbs/web/roomsearch.js', true); // For the 'ChangeOptionDays' function
     if ($javascript_cursor) {
         $PAGE->requires->js('/blocks/mrbs/web/xbLib.js', true);

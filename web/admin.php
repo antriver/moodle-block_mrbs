@@ -15,6 +15,10 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
+/**
+ * @var moodle_database $DB
+ */
+
 require_once(dirname(dirname(dirname(dirname(__FILE__)))) . '/config.php'); //for Moodle integration
 global $PAGE, $CFG, $DB;
 require "config.inc.php";
@@ -162,4 +166,12 @@ if (0 != $area) {
 }
 echo '</td></tr></table>';
 
+$questions = $DB->get_records('block_mrbs_area_questions');
+?>
+<script>
+    var mrbsAreaQuestions = <?=json_encode($types)?>;
+    mrbsInitTypeAdmin();
+</script>
+
+<?php
 include 'trailer.php';
