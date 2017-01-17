@@ -166,12 +166,4 @@ if (0 != $area) {
 }
 echo '</td></tr></table>';
 
-$questions = $DB->get_records('block_mrbs_area_questions');
-?>
-<script>
-    var mrbsAreaQuestions = <?=json_encode($types)?>;
-    mrbsInitTypeAdmin();
-</script>
-
-<?php
 include 'trailer.php';
