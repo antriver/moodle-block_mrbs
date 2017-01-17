@@ -122,7 +122,7 @@ if ($area_list_format == "select") {
     $this_area_name = s($DB->get_field('block_mrbs_area', 'area_name', array('id' => $area)));
     $this_room_name = s($DB->get_field('block_mrbs_room', 'room_name', array('id' => $room)));
 } else {
-    $dbareas = $DB->get_records('block_mrbs_area', null, 'area_name');
+    $dbareas = mrbs_get_bookable_areas();
     $areaurl = new moodle_url($baseurl);
     foreach ($dbareas as $dbarea) {
         if ($pview != 1) {

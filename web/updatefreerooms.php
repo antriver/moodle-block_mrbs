@@ -97,6 +97,14 @@ if (isset($all_day) && ($all_day == "yes")) {
         }
     }
 
+    if (empty($hour)) {
+        $hour = 0;
+    }
+
+    if (empty($minute)) {
+        $minute = 0;
+    }
+
     $starttime = mktime($hour, $minute, 0, $month, $day, $year);
     $endtime = mktime($hour, $minute, 0, $month, $day, $year) + ($units * $duration);
     // Round up the duration to the next whole resolution unit.
@@ -149,20 +157,7 @@ if (!empty($rooms)) {
     $list = '';
     foreach ($rooms as $room) {
         if (allowed_to_book($USER, $room)) {
-            $info = array();
-            $desc = trim(s($room->description));
-            if ($desc) {
-                $info[] = $desc;
-            }
-            if ($room->capacity) {
-                $info[] = $room->capacity;
-            }
-            if ($info) {
-                $info = ' ('.implode(', ', $info).')';
-            } else {
-                $info = '';
-            }
-            $list .= $room->id.','.$room->room_name.$info."\n";
+            $list .= $room->id.','.mrbs_room_name_string($room)."\n";
         }
     }
     echo $list;

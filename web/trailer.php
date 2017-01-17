@@ -33,11 +33,7 @@ if ($pview != 1) {
         $day = strftime("%d");
     }
 
-    if (empty($area)) {
-        $params = array();
-    } else {
-        $params = array('area' => $area);
-    }
+    $params['area'] = optional_param('area', '', PARAM_RAW);
 
     for ($i = -6; $i <= 7; $i++) {
         $ctime = mktime(0, 0, 0, $month, $day + $i, $year);

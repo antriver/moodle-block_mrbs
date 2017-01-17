@@ -24,6 +24,104 @@ require_once('mrbs_auth.php');
 
 $pview = optional_param('pview', 0, PARAM_INT);
 
+/**
+ * @param object $area
+ * @param string $identifier
+ *
+ * @return string
+ */
+function mrbs_get_area_string($area, $identifier) {
+    $stringmanager = get_string_manager();
+
+    $areaidentifier = $identifier.'.'.mrbs_to_snake_case($area->area_name);
+
+    if ($stringmanager->string_exists($areaidentifier, 'block_mrbs')) {
+        return get_string($areaidentifier, 'block_mrbs');
+    }
+
+    return get_string($identifier, 'block_mrbs');
+}
+
+/**
+ * Strips all non alphanumeric characters (except spaces), and converts the given string to snake_case.
+
+ * @param string $string
+ *
+ * @return string
+ */
+function mrbs_to_snake_case($string) {
+    return str_replace(' ', '_', strtolower(preg_replace("/[^a-zA-Z0-9 ]+/", "", $string)));
+}
+
+/**
+ * @return object[]
+ */
+function mrbs_get_bookable_areas() {
+    global $DB;
+    $dbareas = $DB->get_records('block_mrbs_area', null, 'area_name');
+
+    $areas = [];
+    foreach ($dbareas as $dbarea) {
+        if (mrbs_is_booking_allowed($dbarea)) {
+            $areas[] = $dbarea;
+        }
+    }
+
+    return $areas;
+}
+
+/**
+ * @param object $area
+ *
+ * @return bool
+ */
+function mrbs_is_booking_allowed($area) {
+    global $DB, $USER;
+
+    if (empty($USER)) {
+        return false;
+    }
+
+    if (empty($area->allowed_cohorts)) {
+        return true;
+    }
+
+    if (has_capability('moodle/site:config', context_system::instance())) {
+        return true;
+    }
+
+    $allwowedcohorts = explode(',', $area->allowed_cohorts);
+    static $usercohorts = null;
+
+    if (!is_array($usercohorts)) {
+        $usercohorts = [];
+        $rows = $DB->get_records('cohort_members', ['userid' => $USER->id], '', 'cohortid');
+        foreach ($rows as $row) {
+            $usercohorts[] = $row->cohortid;
+        }
+    }
+
+    if (!empty(array_intersect($allwowedcohorts, $usercohorts))) {
+        return true;
+    }
+
+    return false;
+}
+
+/**
+ * @param object $room
+ *
+ * @return string "Room Name (Description Capacity: 123)"
+ */
+function mrbs_room_name_string($room) {
+    $string = $room->room_name;
+
+    $desc = $room->description;
+    $desc .= ' '.get_string('capacity', 'block_mrbs').': '.$room->capacity;
+
+    return $string.' ('.trim($desc).')';
+}
+
 function print_user_header_mrbs($day = null, $month = null, $year = null, $area = null) {
     print_header_mrbs($day, $month, $year, $area, true);
 }
@@ -66,6 +164,7 @@ function print_header_mrbs($day = null, $month = null, $year = null, $area = nul
     $PAGE->set_heading(format_string($strmrbs));
 
     // Load extra javascript
+    $PAGE->requires->jquery();
     $PAGE->requires->js('/blocks/mrbs/web/roomsearch.js', true); // For the 'ChangeOptionDays' function
     if ($javascript_cursor) {
         $PAGE->requires->js('/blocks/mrbs/web/xbLib.js', true);
@@ -87,7 +186,7 @@ function print_header_mrbs($day = null, $month = null, $year = null, $area = nul
     echo '<div id="mrbs-container">';
 
     $titlestr = get_string('mrbs', 'block_mrbs');
-    $homeurl = new moodle_url('/blocks/mrbs/web/index.php');
+    $homeurl = new moodle_url('/blocks/mrbs/index.php');
 
     echo '<a href="'.$homeurl.'"><h2>'.$titlestr.'</h2></a>';
 
@@ -189,47 +288,45 @@ function print_utils_mrbs($area, $year, $month, $day, $area_list_format, $roomno
     echo '<div id="mrbs-jump" class="clearfix">';
 
     echo '<div class="areas">';
-    //Show all available areas
-    echo "<h3>".get_string('areas', 'block_mrbs')."</h3>";
+        //Show all available areas
+        echo "<h3>".get_string('areas', 'block_mrbs')."</h3>";
 
-    // need to show either a select box or a normal html list,
-    // depending on the settings in config.inc.php
-    if ($area_list_format == "select") {
-        echo make_area_select_html(new moodle_url('/blocks/mrbs/web/day.php'), $area, $year, $month, $day); // from functions.php
-    } else {
-        // show the standard html list
-        $areas = $DB->get_records('block_mrbs_area', null, 'area_name');
-        foreach ($areas as $dbarea) {
-            echo '<a href="'.($baseurl->out(true, array('area' => $dbarea->id))).'">';
-            if ($dbarea->id == $area) {
-                echo "<font color=\"red\">".s($dbarea->area_name)."</font></a><br>\n";
-            } else {
-                echo s($dbarea->area_name)."</a><br>\n";
+        // need to show either a select box or a normal html list,
+        // depending on the settings in config.inc.php
+        if ($area_list_format == "select") {
+            echo make_area_select_html(new moodle_url('/blocks/mrbs/web/day.php'), $area, $year, $month, $day); // from functions.php
+        } else {
+            // show the standard html list
+            $areas = mrbs_get_bookable_areas();
+            foreach ($areas as $dbarea) {
+                echo '<a href="'.($baseurl->out(true, array('area' => $dbarea->id))).'">';
+                if ($dbarea->id == $area) {
+                    echo "<font color=\"red\">".s($dbarea->area_name)."</font></a><br>\n";
+                } else {
+                    echo s($dbarea->area_name)."</a><br>\n";
+                }
             }
         }
-    }
-
     echo '</div>';
 
     echo '<div class="find-room">';
-    //insert the goto room form
-    $gotoroom = new moodle_url('/blocks/mrbs/web/gotoroom.php');
-    $gostr = get_string('goroom', 'block_mrbs');
-    $gotoval = '';
-    $gotomsg = '';
-    if ($roomnotfound) {
-        $gotoval = $roomnotfound;
-        $gotomsg = ' '.get_string('noroomsfound', 'block_mrbs');
-    }
-    echo "<h3>".get_string('findroom', 'block_mrbs')."</h3>
-        <form action='$gotoroom' method='get'>
-            <input type='text' name='room' value='$gotoval'>
-            <input type='hidden' name='day' value='$day'>
-            <input type='hidden' name='month' value='$month'>
-            <input type='hidden' name='year' value='$year'>
-            <input type='submit' value='$gostr'>$gotomsg
-        </form>";
-
+        //insert the goto room form
+        $gotoroom = new moodle_url('/blocks/mrbs/web/gotoroom.php');
+        $gostr = get_string('goroom', 'block_mrbs');
+        $gotoval = '';
+        $gotomsg = '';
+        if ($roomnotfound) {
+            $gotoval = $roomnotfound;
+            $gotomsg = ' '.get_string('noroomsfound', 'block_mrbs');
+        }
+        echo "<h3>".get_string('findroom', 'block_mrbs')."</h3>
+            <form action='$gotoroom' method='get'>
+                <input type='text' name='room' value='$gotoval'>
+                <input type='hidden' name='day' value='$day'>
+                <input type='hidden' name='month' value='$month'>
+                <input type='hidden' name='year' value='$year'>
+                <input type='submit' value='$gostr'>$gotomsg
+            </form>";
     echo '</div>';
 
     //Draw the three month calendars
@@ -534,7 +631,7 @@ function make_area_select_html($link, $current, $year, $month, $day) {
 <form name=\"areaChangeForm\" method=get action=\"$link\">
   <select name=\"area\" onChange=\"document.areaChangeForm.submit()\">";
 
-    $areas = $DB->get_records('block_mrbs_area', null, 'area_name');
+    $areas = mrbs_get_bookable_areas();
     foreach ($areas as $area) {
         $selected = ($area->id == $current) ? "selected" : "";
         $out_html .= "

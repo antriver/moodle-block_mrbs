@@ -80,7 +80,12 @@ function showAccessDenied($day, $month, $year, $area) {
     global $OUTPUT;
 
     print_header_mrbs($day, $month, $year, $area);
-    echo $OUTPUT->box(get_string('accessdenied', 'block_mrbs').'<br/>'.get_string('norights', 'block_mrbs'), 'generalbox boxaligncenter');
+
     echo '<br/>';
+    echo '<div class="alert alert-danger">';
+    echo '<p><strong>'.get_string('accessdenied', 'block_mrbs').'</strong></p>';
+    echo '<p>'.get_string('norights', 'block_mrbs').'</p>';
+    echo '</div>';
+
     echo $OUTPUT->footer();
 }

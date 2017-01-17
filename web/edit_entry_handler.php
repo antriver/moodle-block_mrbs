@@ -52,7 +52,7 @@ $rep_day = optional_param_array('rep_day', null, PARAM_RAW);
 $rooms = optional_param_array('rooms', array(), PARAM_INT);
 $doublebook = optional_param('doublebook', 0, PARAM_INT);
 $roomchange = optional_param('roomchange', false, PARAM_BOOL);
-$data = optional_param('data', false, PARAM_RAW);
+$custom_data = optional_param_array('custom_data', false, PARAM_RAW);
 
 define('MRBS_ERR_DOUBLEBOOK', 1);
 define('MRBS_ERR_TOOMANY', 2);
@@ -340,7 +340,7 @@ if (empty($err)) {
         if ($edit_type == "series") {
             $rep_details = mrbsCreateRepeatingEntrys($starttime, $endtime, $rep_type, $rep_enddate, $rep_opt,
                                                      $room_id, $create_by, $name, $type, $description,
-                                                     isset($rep_num_weeks) ? $rep_num_weeks : 0, $roomchange, $id);
+                                                     isset($rep_num_weeks) ? $rep_num_weeks : 0, $roomchange, $id, $custom_data);
             $new_id = $rep_details->id;
 
             $enddate = null;
@@ -387,7 +387,7 @@ if (empty($err)) {
 
             // Create / update the entry:
             $new_id = mrbsCreateSingleEntry($starttime, $endtime, $entry_type, $repeat_id, $room_id,
-                                            $create_by, $name, $type, $description, $id, $roomchange);
+                                            $create_by, $name, $type, $description, $id, $roomchange, $custom_data);
 
             $sql = "SELECT r.id, r.room_name, r.area_id, a.area_name ";
             $sql .= "FROM {block_mrbs_room} r, {block_mrbs_area} a ";

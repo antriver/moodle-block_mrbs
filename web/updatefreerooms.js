@@ -1,6 +1,4 @@
-function updateFreeRooms() {
-//check for force book- if ticked we should be able to select any room
-
+function buildUrlString() {
     var dayInput = document.getElementsByName('day');
     var day = dayInput[2].selectedIndex + 1;
 
@@ -10,23 +8,40 @@ function updateFreeRooms() {
     var yearInput = document.getElementsByName('year');
     var year = yearInput[2].options[yearInput[2].selectedIndex].value;
 
-    var periodInput = document.getElementsByName('period');
-    var period = periodInput[0].selectedIndex;
-
-    var durationInput = document.getElementsByName('duration');
-    var duration = durationInput[0].value;
-
-    var dur_unitsInput = document.getElementsByName('dur_units');
-    var dur_units = dur_unitsInput[0].options[dur_unitsInput[0].selectedIndex].value;
-
     var areasInput = document.getElementsByName('areas');
     var area = 0;
     if (areasInput.length) {
         area = areasInput[0].options[areasInput[0].selectedIndex].value;
     }
 
+    var url = "?day=" + day + "&month=" + month + "&year=" + year + "&area=" + area;
+
+    if (entry_id) {
+        url += "&id=" + entry_id;
+    }
+
+    return url;
+}
+
+function updateFreeRooms() {
+//check for force book- if ticked we should be able to select any room
+
+    var searchstring = buildUrlString();
+
+    var dur_unitsInput = document.getElementsByName('dur_units');
+    var dur_units = dur_unitsInput[0].options[dur_unitsInput[0].selectedIndex].value;
+
+    var periodInput = document.getElementsByName('period');
+    var period = 0;
+    if (periodInput.length > 0) {
+        period = periodInput[0].selectedIndex;
+    }
+
+    var durationInput = document.getElementsByName('duration');
+    var duration = durationInput[0].value;
+
     //currentroom is put onto edit_entry.php server-side
-    var searchstring = "?day=" + day + "&month=" + month + "&year=" + year + "&period=" + period + "&duration=" + duration + "&dur_units=" + dur_units + "&area=" + area + "&currentroom=" + currentroom;
+    searchstring += '&dur_units=' + dur_units + '&period=' + period + '&duration=' + duration + "&currentroom=" + currentroom;
 
     if (canforcebook) {
         var forcebookInput = document.getElementsByName('forcebook');
@@ -72,18 +87,18 @@ function updateFreeRooms() {
             var i;
             var room;
             if (roomsInput.selectedIndex !== -1) {
-                for (i = 0; i<roomsInput.length; i++) {
+                for (i = 0; i < roomsInput.length; i++) {
                     currentSelection[roomsInput.options[i].value] = roomsInput.options[i].selected;
                 }
                 roomsInput.selectedIndex = -1;
             }
             //wipe all the old options
-            for (i = roomsInput.length; i>=0; i--) {
+            for (i = roomsInput.length; i >= 0; i--) {
                 roomsInput[i] = null;
             }
             if (xmlHttp.responseText !== '') {
 
-                for (i = 0; i<freeRooms.length; i++) {
+                for (i = 0; i < freeRooms.length; i++) {
                     if (freeRooms[i].search(/^\s*$/) !== -1) {
                         continue; // Skip empty lines
                     }

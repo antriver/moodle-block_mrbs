@@ -211,7 +211,7 @@ function mrbsCreateSingleEntry($starttime, $endtime, $entry_type, $repeat_id, $r
  *   non-zero - The entry's ID
  */
 function mrbsCreateRepeatEntry($starttime, $endtime, $rep_type, $rep_enddate, $rep_opt,
-                               $room_id, $owner, $name, $type, $description, $rep_num_weeks, $oldrepeatid = 0) {
+                               $room_id, $owner, $name, $type, $description, $rep_num_weeks, $oldrepeatid = 0, $data = null) {
     global $DB;
 
     $add = new stdClass;
@@ -226,6 +226,7 @@ function mrbsCreateRepeatEntry($starttime, $endtime, $rep_type, $rep_enddate, $r
     $add->type = $type;
     $add->name = $name;
     $add->timestamp = time();
+    $add->data = json_encode($data);
 
     // Optional things, pgsql doesn't like empty strings!
     if (!empty($rep_opt)) {
@@ -449,7 +450,7 @@ function mrbsCreateRepeatingEntrys($starttime, $endtime, $rep_type, $rep_enddate
         return $ret;
     }
 
-    $ret->id = mrbsCreateRepeatEntry($starttime, $endtime, $rep_type, $rep_enddate, $rep_opt, $room_id, $owner, $name, $type, $description, $rep_num_weeks, $repeatid);
+    $ret->id = mrbsCreateRepeatEntry($starttime, $endtime, $rep_type, $rep_enddate, $rep_opt, $room_id, $owner, $name, $type, $description, $rep_num_weeks, $repeatid, $data);
 
     if ($ret->id) {
         $oldids = array();
@@ -476,7 +477,7 @@ function mrbsCreateRepeatingEntrys($starttime, $endtime, $rep_type, $rep_enddate
             }
 
             mrbsCreateSingleEntry($reps[$i], $reps[$i] + $diff, 1, $ret->id,
-                                  $room_id, $owner, $name, $type, $description, $updateid, $roomchange);
+                                  $room_id, $owner, $name, $type, $description, $updateid, $roomchange, $data);
             $ret->lasttime = $reps[$i];
 
             $ret->created++;

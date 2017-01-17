@@ -78,6 +78,7 @@ require_login();
 $namefields = get_all_user_name_fields(true, 'u');
 if ($series) {
     $sql = "SELECT re.name,
+            re.data,
             re.description,
             re.create_by,
             r.room_name,
@@ -100,6 +101,7 @@ if ($series) {
             AND re.id= ?";
 } else {
     $sql = "SELECT e.name,
+            e.data,
             e.description,
             e.create_by,
             r.room_name,
@@ -138,6 +140,8 @@ $updated = time_date_string($booking->timestamp);
 // need to make DST correct in opposite direction to entry creation
 // so that user see what he expects to see
 $duration = $booking->duration - cross_dst($booking->start_time, $booking->end_time);
+
+$custom_data = !empty($booking->data) ? json_decode($booking->data) : [];
 
 if ($enable_periods) {
     list($start_period, $start_date) = period_date_string($booking->start_time);
@@ -249,6 +253,15 @@ print_header_mrbs($day, $month, $year, $area);
             <td><b><?php echo get_string('end_date', 'block_mrbs') ?></b></td>
             <td><?php echo $end_date ?></td>
         </tr>
+
+        <?php
+        foreach ($custom_data as $custom_key => $custom_value) {
+            echo '<tr>';
+                echo '<td><b>'.get_string('custom.'.$custom_key, 'block_mrbs').'</b></td>';
+                echo '<td>'.s($custom_value).'</td>';
+            echo '</tr>';
+        }
+        ?>
         <tr>
             <td><b><?php echo get_string('type', 'block_mrbs') ?></b></td>
             <td><?php echo empty($typel[$type]) ? "?$type?" : $typel[$type] ?></td>

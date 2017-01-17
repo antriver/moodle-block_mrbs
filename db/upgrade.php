@@ -194,7 +194,7 @@ function xmldb_block_mrbs_upgrade($oldversion=0) {
         upgrade_block_savepoint(true, 2016101700, 'mrbs');
     }
 
-    if ($oldversion < 2017011700) {
+    if ($oldversion < 2017011702) {
 
         // Define field data to be added to block_mrbs_entry.
         $table = new xmldb_table('block_mrbs_entry');
@@ -205,8 +205,26 @@ function xmldb_block_mrbs_upgrade($oldversion=0) {
             $dbman->add_field($table, $field);
         }
 
+        // Define field data to be added to block_mrbs_repeat.
+        $table = new xmldb_table('block_mrbs_repeat');
+        $field = new xmldb_field('data', XMLDB_TYPE_TEXT, null, null, null, null, null, 'roomchange');
+
+        // Conditionally launch add field data.
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+
+        // Define field allowed_cohorts to be added to block_mrbs_area.
+        $table = new xmldb_table('block_mrbs_area');
+        $field = new xmldb_field('allowed_cohorts', XMLDB_TYPE_TEXT, null, null, null, null, null, 'area_admin_email');
+
+        // Conditionally launch add field id.
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+
         // Mrbs savepoint reached.
-        upgrade_block_savepoint(true, 2017011700, 'mrbs');
+        upgrade_block_savepoint(true, 2017011702, 'mrbs');
     }
 
     return true;

@@ -16,7 +16,7 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 require_once(dirname(dirname(dirname(dirname(__FILE__)))).'/config.php'); //for Moodle integration
-global $PAGE, $DB, $OUTPUT;
+global $CFG, $PAGE, $DB, $OUTPUT;
 include "config.inc.php";
 include "functions.php";
 require_once('mrbs_auth.php');
@@ -43,6 +43,7 @@ $change_room = optional_param('change_room', false, PARAM_TEXT);
 $area_name = optional_param('area_name', '', PARAM_TEXT);
 $area_admin_email = optional_param('area_admin_email', '', PARAM_TEXT);
 $change_area = optional_param('change_area', false, PARAM_TEXT);
+$allowedcohorts = optional_param_array('allowed_cohorts', false, PARAM_INT);
 
 // $room_admin_email = optional_param('room_admin_email', 0, PARAM_BOOL); //not sure if this is from config or passed from URL -ab.
 
@@ -87,8 +88,6 @@ if (($change_done)) {
 
 print_header_mrbs($day, $month, $year, isset($area) ? $area : "");
 
-echo $OUTPUT->heading(get_string('editroomarea', 'block_mrbs'), 2);
-
 echo '<table>';
 
 if ($room > 0) {
@@ -128,7 +127,8 @@ if ($room > 0) {
     }
 
     $dbroom = $DB->get_record('block_mrbs_room', array('id' => $room), '*', MUST_EXIST);
-    echo '<h3 ALIGN=CENTER>'.get_string('editroom', 'block_mrbs').'</h3>';
+    echo '<h2>'.get_string('editroom', 'block_mrbs').'</h2>';
+
     echo '<form action="'.$thisurl->out_omit_querystring().'" method="post">';
     echo '<input type="hidden" name="room" value="'.$dbroom->id.'">';
     echo '<input type="hidden" name="sesskey" value="'.sesskey().'">';
@@ -168,25 +168,56 @@ if ($area) {
         $updarea->id = $area;
         $updarea->area_name = $area_name;
         $updarea->area_admin_email = $area_admin_email;
+        $updarea->allowed_cohorts = !empty($allowedcohorts) ? implode(',', $allowedcohorts) : null;
         $DB->update_record('block_mrbs_area', $updarea);
     }
 
     $dbarea = $DB->get_record('block_mrbs_area', array('id' => $area), '*', MUST_EXIST);
 
-    echo '<h3 ALIGN=CENTER>'.get_string('editarea', 'block_mrbs').'</h3>';
+    echo '<h2>'.get_string('editarea', 'block_mrbs').'</h2>';
+
     echo '<form action="'.$thisurl->out_omit_querystring().'" method="post">';
     echo '<input type="hidden" name="area" value="'.$dbarea->id.'">';
     echo '<input type="hidden" name="sesskey" value="'.sesskey().'">';
-    echo '<CENTER><TABLE>';
+    echo '<TABLE cellpadding="5" cellspacing="5">';
     echo '<TR><TD>'.get_string('name').':       </TD><TD><input type="text" name="area_name" value="'.s($dbarea->area_name).'" maxlength="255"></TD></TR>';
     echo '<TR><TD>'.get_string('area_admin_email', 'block_mrbs').':       </TD><TD><input type="text" name="area_admin_email" maxlength="255" value="'.s($dbarea->area_admin_email).'"></TD>';
     if (!$valid_email) {
         echo "<TD>&nbsp;</TD><TD><STRONG>".get_string('emailmustbereal')."</STRONG></TD>";
     }
-    echo '</TR></TABLE>';
-    echo '<input type=submit name="change_area" value="'.get_string('savechanges').'">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;';
-    echo '<input type=submit name="change_done" value="'.get_string('backadmin', 'block_mrbs').'">';
-    echo '</CENTER></form>';
+    echo '</TR>';
+
+    // Allowed cohort selection
+
+    // Load all available cohorts
+    require_once($CFG->dirroot.'/cohort/lib.php');
+    $cohorts = cohort_get_all_cohorts();
+    $cohorts = $cohorts['cohorts'];
+
+    $allowedcohorts = [];
+    if (!empty($dbarea->allowed_cohorts)) {
+        $allowedcohorts = explode(',', $dbarea->allowed_cohorts);
+    }
+
+    echo '<tr>';
+        echo '<td>'.get_string('allowed_cohorts', 'block_mrbs').'</td>';
+        echo '<td>';
+            echo '<select multiple name="allowed_cohorts[]">';
+            foreach ($cohorts as $cohort) {
+
+                $selected = in_array($cohort->id, $allowedcohorts) ? 'selected' : '';
+                echo '<option value="'.$cohort->id.'" '.$selected.'>'.$cohort->name.' ['.$cohort->idnumber.']</option>';
+            }
+            echo '</select>';
+        echo '</td>';
+    echo '</tr>';
+
+    echo '</TABLE>';
+
+    echo '<input type="submit" name="change_done" value="'.get_string('backadmin', 'block_mrbs').'" />';
+    echo '<input type="submit" name="change_area" value="'.get_string('savechanges').'" />';
+
+    echo '</form>';
 }
 echo '</TABLE>';
 

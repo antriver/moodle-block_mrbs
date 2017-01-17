@@ -26,7 +26,7 @@ global $twentyfourhour_format, $morningstarts;
 $day = optional_param('day', 0, PARAM_INT);
 $month = optional_param('month', 0, PARAM_INT);
 $year = optional_param('year', 0, PARAM_INT);
-$area = optional_param('area', 0, PARAM_INT);
+$area_id = optional_param('area', 0, PARAM_INT);
 $edit_type = optional_param('edit_type', '', PARAM_ALPHA);
 $id = optional_param('id', 0, PARAM_INT);
 $room = optional_param('room', 0, PARAM_INT);
@@ -45,11 +45,13 @@ if (($day == 0) or ($month == 0) or ($year == 0)) {
 
 $thisurl = new moodle_url('/blocks/mrbs/web/edit_entry.php', array('day' => $day, 'month' => $month, 'year' => $year));
 
-if ($area) {
-    $thisurl->param('area', $area);
+// Area will always be populated. Either by user choice, or the default area.
+if ($area_id) {
+    $thisurl->param('area', $area_id);
 } else {
-    $area = get_default_area();
+    $area_id = get_default_area();
 }
+
 if ($id) {
     $thisurl->param('id', $id);
 }
@@ -73,7 +75,7 @@ $PAGE->set_url($thisurl);
 require_login();
 
 if (!getAuthorised(1)) {
-    showAccessDenied($day, $month, $year, $area);
+    showAccessDenied($day, $month, $year, $area_id);
     exit;
 }
 
@@ -115,6 +117,8 @@ if ($id > 0) {
     }
     $entry_type = $entry->entry_type;
     $rep_id = $entry->repeat_id;
+
+    $custom_data = !empty($entry->data) ? json_decode($entry->data) : [];
 
     if ($entry_type >= 1) {
         $repeat = $DB->get_record('block_mrbs_repeat', array('id' => $rep_id), '*', MUST_EXIST);
@@ -177,17 +181,41 @@ if ($id > 0) {
     $rep_end_month = $month;
     $rep_end_year = $year;
     $rep_day = array(0, 0, 0, 0, 0, 0, 0);
+    $custom_data = [];
 }
 
-// These next 4 if statements handle the situation where
-// this page has been accessed directly and no arguments have
-// been passed to it.
-// If we have not been provided with a room_id
+// If a room id is given, load the data for the room
+$dbroom = null;
+if (!empty($room_id)) {
+    $dbroom = $DB->get_record('block_mrbs_room', ['id' => $room_id]);
+}
 
-if ($room_id == 0) {
-    $dbroom = $DB->get_records('block_mrbs_room', null, 'room_name', 'id', 0, 1);
-    if ($dbroom) {
-        $dbroom = reset($dbroom);
+if (!empty($dbroom)) {
+    // If the room is known, load the area id from it
+    if (!empty($dbroom->area_id)) {
+        $area_id = $dbroom->area_id;
+    }
+}
+
+// If the area id is known, load the data for the area
+$dbarea = null;
+if (!empty($area_id)) {
+    $dbarea = $DB->get_record('block_mrbs_area', ['id' => $area_id]);
+}
+
+$areaslug = null;
+if (!empty($dbarea)) {
+    $area_id = $dbarea->id;
+    $areaslug = mrbs_to_snake_case($dbarea->area_name);
+}
+
+// Load the rooms in the area
+$dbrooms = $DB->get_records('block_mrbs_room', ['area_id' => $area_id], 'room_name');
+
+if (empty($room_id)) {
+    // If no room is chosen, select the first room for the area
+    if ($dbrooms) {
+        $dbroom = reset($dbrooms);
         $room_id = $dbroom->id;
     }
 }
@@ -228,14 +256,19 @@ if (!getWritable($create_by, getUserName())) {
     }
 
     if (!$roomadmin) {
-        showAccessDenied($day, $month, $year, $area);
+        showAccessDenied($day, $month, $year, $area_id);
         exit;
     }
 }
 
+if ($dbarea && !mrbs_is_booking_allowed($dbarea)) {
+    showAccessDenied($day, $month, $year, $area_id);
+    exit();
+}
+
 $PAGE->requires->js('/blocks/mrbs/web/updatefreerooms.js', true);
 
-print_header_mrbs($day, $month, $year, $area);
+print_header_mrbs($day, $month, $year, $area_id);
 
 ?>
 <SCRIPT LANGUAGE="JavaScript">
@@ -328,7 +361,7 @@ print_header_mrbs($day, $month, $year, $area);
 <FORM NAME="main" ACTION="edit_entry_handler.php" METHOD="GET">
     <input type="hidden" name="sesskey" value="<?php echo sesskey(); ?>">
 
-    <TABLE BORDER=0>
+    <table border="0" cellpadding="5" cellspacing="5">
 
         <?php if ($edit_type != 'series' && $rep_id) { ?>
             <tr>
@@ -341,20 +374,76 @@ print_header_mrbs($day, $month, $year, $area);
             </tr>
         <?php } ?>
 
-        <TR>
-            <TD CLASS=CR><B><?php echo get_string('namebooker', 'block_mrbs') ?></B></TD>
+        <tr id="mrbs-booking-area">
+            <td class="CR" valign="top">
+                <strong><?php echo mrbs_get_area_string($dbarea, 'area') ?></strong>
+            </td>
+            <td class="CL" valign="top">
+                <select name="areas" onChange="changeArea()">
+                    <?php
+                    $selectableareas = mrbs_get_bookable_areas();
+                    foreach ($selectableareas as $selectablearea) {
+                        $selected = ($selectablearea->id == $area_id) ? 'selected' : '';
+                        echo '<option ' . $selected . ' value="' . $selectablearea->id . '">' . $selectablearea->area_name . '</option>';
+                    }
+                    ?>
+                </select>
+            </td>
+        </tr>
+
+        <tr id="mrbs-booking-room">
+            <td class=CR><b><?php echo mrbs_get_area_string($dbarea, 'room') ?></b></td>
+            <td class=CL valign=top>
+                <select name="rooms[]" multiple="yes">
+                    <?php
+                    // select the rooms in the area determined above
+                    //$sql = "select id, room_name from $tbl_room where area_id=$area order by room_name";
+                    $rooms = $DB->get_records('block_mrbs_room', array('area_id' => $area_id), 'room_name');
+
+                    $i = 0;
+                    foreach ($rooms as $dbroom) {
+                        if (!allowed_to_book($USER, $dbroom)) {
+                            continue;
+                        }
+                        $selected = $dbroom->id == $room_id ? 'selected' : '';
+
+                        echo '<option '.$selected.' value="'.$dbroom->id.'">'.s(mrbs_room_name_string($dbroom)).'</option>';
+
+                        // store room names for emails
+                        $room_names[$i] = $dbroom->room_name;
+                        $i++;
+                    }
+                    ?>
+                </select>
+
+                <small><?php echo get_string('ctrl_click', 'block_mrbs') ?></small>
+
+                <label for="nooccupied">
+                    <?php echo get_string('dontshowoccupied', 'block_mrbs') ?>
+                    <input name="nooccupied" id="nooccupied" type="checkbox" checked="checked" onclick="updateFreeRooms()"/>
+                </label>
+            </td>
+        </tr>
+
+        <TR id="mrbs-booking-name">
+            <TD CLASS=CR><B><?php echo mrbs_get_area_string($dbarea, 'namebooker') ?></B></TD>
             <TD CLASS=CL><INPUT NAME="name" SIZE=40 VALUE="<?php echo htmlspecialchars($name, ENT_NOQUOTES) ?>"></TD>
         </TR>
 
-        <TR>
-            <TD CLASS=TR><B><?php echo get_string('fulldescription', 'block_mrbs') ?></B></TD>
-            <!--  <TD CLASS=TL><TEXTAREA NAME="description" ROWS=8 COLS=40 WRAP="virtual"> //removing undefined wrap attribute-->
-            <TD CLASS=TL><TEXTAREA NAME="description" ROWS=8 COLS=40><?php echo
-                    htmlspecialchars($description); ?></TEXTAREA></TD>
+        <TR id="mrbs-booking-description">
+            <TD CLASS=TR>
+                <label for="description">
+                <strong><?php echo mrbs_get_area_string($dbarea, 'fulldescription') ?></strong>
+                <br/><?php echo mrbs_get_area_string($dbarea, 'fulldescription_desc') ?>
+                </label>
+            </TD>
+            <TD CLASS=TL>
+                <TEXTAREA NAME="description" ROWS=8 COLS=40><?php echo htmlspecialchars($description); ?></TEXTAREA>
+            </TD>
         </TR>
 
-        <TR>
-            <TD CLASS=CR><B><?php echo get_string('date') ?></B></TD>
+        <TR id="mrbs-booking-date">
+            <TD CLASS=CR><B><?php echo mrbs_get_area_string($dbarea, 'date') ?></B></TD>
             <TD CLASS=CL>
                 <?php genDateSelector("", $start_day, $start_month, $start_year, true) ?>
                 <SCRIPT LANGUAGE="JavaScript">ChangeOptionDays(document.main, '');</SCRIPT>
@@ -362,8 +451,8 @@ print_header_mrbs($day, $month, $year, $area);
         </TR>
 
         <?php if (!$enable_periods) { ?>
-            <TR>
-                <TD CLASS=CR><B><?php echo get_string('time') ?></B></TD>
+            <TR id="mrbs-booking-time">
+                <TD CLASS=CR><B><?php echo mrbs_get_area_string($dbarea, 'time') ?></B></TD>
                 <TD CLASS=CL><INPUT NAME="hour" SIZE=2 VALUE="<?php if (!$twentyfourhour_format && ($start_hour > 12)) {
                         echo($start_hour - 12);
                     } else {
@@ -381,8 +470,8 @@ print_header_mrbs($day, $month, $year, $area);
                 </TD>
             </TR>
         <?php } else { ?>
-            <TR>
-                <TD CLASS=CR><B><?php echo get_string('period', 'block_mrbs') ?></B></TD>
+            <TR id="mrbs-booking-period">
+                <TD CLASS=CR><B><?php echo mrbs_get_area_string($dbarea, 'period') ?></B></TD>
                 <TD CLASS=CL>
                     <SELECT NAME="period" onChange="updateFreeRooms()">
                         <?php
@@ -400,8 +489,9 @@ print_header_mrbs($day, $month, $year, $area);
             </TR>
 
         <?php } ?>
-        <TR>
-            <TD CLASS=CR><B><?php echo get_string('duration', 'block_mrbs'); ?></B></TD>
+
+        <TR id="mrbs-booking-duration">
+            <TD CLASS=CR><B><?php echo mrbs_get_area_string($dbarea, 'duration'); ?></B></TD>
             <TD CLASS=CL><INPUT NAME="duration" SIZE=7 VALUE="<?php echo $duration; ?>" onChange="updateFreeRooms()">
                 <SELECT NAME="dur_units" onChange="updateFreeRooms()">
                     <?php
@@ -420,95 +510,24 @@ print_header_mrbs($day, $month, $year, $area);
                     }
                     ?>
                 </SELECT>
-                <INPUT NAME="all_day" TYPE="checkbox" VALUE="yes" id="all_day" <?php if ($all_day) {
-                    echo 'CHECKED ';
-                } ?>onClick="OnAllDayClick()"> <?php echo get_string('all_day', 'block_mrbs');
-                if ($all_day) {
-                    echo '<body onload = "OnAllDayClick()"></body>';
-                } ?>
+                <label id="mrbs-booking-all-day">
+                    <INPUT NAME="all_day" TYPE="checkbox" VALUE="yes" id="all_day" <?=($all_day ? 'checked' : '')?> onClick="OnAllDayClick()">
+                    <?php echo get_string('all_day', 'block_mrbs'); ?>
+                </label>
             </TD>
         </TR>
 
 
         <?php
-        // Determine the area id of the room in question first
-        $area_id = $DB->get_field('block_mrbs_room', 'area_id', array('id' => $room_id), MUST_EXIST);
-        // determine if there is more than one area
-        $areas = $DB->get_records('block_mrbs_area', null, 'area_name');
-        // if there is more than one area then give the option
-        // to choose areas.
-        if (count($areas) > 1) {
-
-            ?>
-            <script language="JavaScript">
-                <!--
-
-                // create area selector if javascript is enabled as this is required
-                // if the room selector is to be updated.
-                this.document.writeln("<tr><td class=CR><b><?php echo get_string('areas', 'block_mrbs') ?>:</b></td><td class=CL valign=top>");
-                this.document.writeln("          <select name=\"areas\" onChange=\"updateFreeRooms()\">");
-                <?php
-                // get list of areas
-
-                foreach ($areas as $dbarea) {
-                    $selected = "";
-                    if ($dbarea->id == $area_id) {
-                        $selected = "SELECTED";
-                    }
-                    print "this.document.writeln(\"            <option $selected value=\\\"".$dbarea->id."\\\">".$dbarea->area_name."\")\n";
-                }
-
-                print "this.document.writeln(\"            <option  value=\\\"IT\\\">".get_string('computerrooms', 'block_mrbs')."\")\n";
-                ?>
-                this.document.writeln("          </select>");
-                this.document.writeln("</td></tr>");
-                // -->
-            </script>
-            <?php
-        } // if $num_areas
+        // Include the custom fields for this area type, if defined.
+        $customfilename = __DIR__.'/areas/'.$areaslug.'.php';
+        if (file_exists($customfilename)) {
+            include($customfilename);
+        }
         ?>
-        <tr>
-            <td class=CR><b><?php echo get_string('rooms', 'block_mrbs') ?>:</b></td>
-            <td class=CL valign=top>
-                <table>
-                    <tr>
-                        <td><select name="rooms[]" multiple="yes">
-                                <?php
-                                // select the rooms in the area determined above
-                                //$sql = "select id, room_name from $tbl_room where area_id=$area_id order by room_name";
-                                $rooms = $DB->get_records('block_mrbs_room', array('area_id' => $area_id), 'room_name');
 
-                                $i = 0;
-                                foreach ($rooms as $dbroom) {
-                                    if (!allowed_to_book($USER, $dbroom)) {
-                                        continue;
-                                    }
-                                    $selected = "";
-                                    if ($dbroom->id == $room_id) {
-                                        $selected = "SELECTED";
-                                    }
-                                    echo "<option $selected value=\"".$dbroom->id."\">".s($dbroom->room_name)." (".s($dbroom->description)." Capacity:$dbroom->capacity)";
-                                    // store room names for emails
-                                    $room_names[$i] = $dbroom->room_name;
-                                    $i++;
-                                }
-                                ?>
-                            </select></td>
-                        <td><?php echo get_string('ctrl_click', 'block_mrbs') ?></td>
-                    </tr>
-                    <tr>
-                        <td><label for="nooccupied"><?php echo get_string('dontshowoccupied', 'block_mrbs') ?></label><input
-                                name="nooccupied" id="nooccupied" type="checkbox" checked="checked" onclick="updateFreeRooms()"/>
-                        </td>
-                        <td></td>
-                    </tr>
-
-                </table>
-            </td>
-        </tr>
-
-        <TR>
-            <TD CLASS=CR><B><?php echo get_string('type', 'block_mrbs') ?></B></TD>
+        <TR id="mrbs-booking-type" style="display:none;">
+            <TD CLASS=CR><B><?php echo mrbs_get_area_string($dbarea, 'type') ?></B></TD>
             <TD CLASS=CL><SELECT NAME="type">
                     <?php
                     //If this is an imported booking, forcably mark it as edited so that changes are not overridden on next import
@@ -539,10 +558,11 @@ print_header_mrbs($day, $month, $year, $area);
                     }
                     ?></SELECT></TD>
         </TR>
-        <tr>
+
+        <tr id="mrbs-booking-force">
             <td>
                 <?php if (has_capability("block/mrbs:forcebook", $context)) {
-                    echo '<label for="mrbsforcebook"><b>'.get_string('forciblybook2', 'block_mrbs').':</b></label></td><td><input id="mrbsforcebook" type="checkbox" name="forcebook" value="TRUE"';
+                    echo '<label for="mrbsforcebook"><b>'.mrbs_get_area_string($dbarea, 'forciblybook2').':</b></label></td><td><input id="mrbsforcebook" type="checkbox" name="forcebook" value="TRUE"';
                     if ($force) {
                         echo ' checked="CHECKED"';
                     }
@@ -553,8 +573,8 @@ print_header_mrbs($day, $month, $year, $area);
         </tr>
         <?php if ($edit_type == "series") { ?>
 
-            <TR>
-                <TD CLASS=CR><B><?php echo get_string('rep_type', 'block_mrbs') ?></B></TD>
+            <TR id="mrbs-booking-repeat-type">
+                <TD CLASS=CR><B><?php echo mrbs_get_area_string($dbarea, 'rep_type') ?></B></TD>
                 <TD CLASS=CL>
                     <?php
 
@@ -573,14 +593,15 @@ print_header_mrbs($day, $month, $year, $area);
                 </TD>
             </TR>
 
-            <TR>
-                <TD CLASS=CR><B><?php echo get_string('rep_end_date', 'block_mrbs') ?></B></TD>
+            <TR id="mrbs-booking-repeat-end-date">
+                <TD CLASS=CR><B><?php echo mrbs_get_area_string($dbarea, 'rep_end_date') ?></B></TD>
                 <TD CLASS=CL><?php genDateSelector("rep_end_", $rep_end_day, $rep_end_month, $rep_end_year) ?></TD>
             </TR>
 
-            <TR>
+            <TR id="mrbs-booking-repeat-day">
                 <TD CLASS=CR>
-                    <B><?php echo get_string('rep_rep_day', 'block_mrbs') ?></B> <?php echo get_string('rep_for_weekly', 'block_mrbs') ?>
+                    <strong><?php echo mrbs_get_area_string($dbarea, 'rep_rep_day') ?></strong>
+                    <?php echo mrbs_get_area_string($dbarea, 'rep_for_weekly') ?>
                 </TD>
                 <TD CLASS=CL>
                     <?php
@@ -601,7 +622,8 @@ print_header_mrbs($day, $month, $year, $area);
         } else {
             $key = "rep_type_".(isset($rep_type) ? $rep_type : "0");
 
-            echo "<tr><td class=\"CR\"><b>".get_string('rep_type', 'block_mrbs')."</b></td><td class=\"CL\">".get_string($key, 'block_mrbs')."</td></tr>\n";
+            echo "<tr><td class=\"CR\"><strong>".mrbs_get_area_string($dbarea, 'rep_type')."</strong></td>
+            <td class=\"CL\">".get_string($key, 'block_mrbs')."</td></tr>\n";
 
             if (isset($rep_type) && ($rep_type != 0)) {
                 $opt = "";
@@ -630,9 +652,10 @@ print_header_mrbs($day, $month, $year, $area);
         if ((($id == 0)) Xor (isset($rep_type) && ($rep_type != 0) && ("series" == $edit_type))) {
             ?>
 
-            <TR>
+            <TR id="mrbs-booking-repeat-weeks">
                 <TD CLASS=CR>
-                    <B><?php echo get_string('rep_num_weeks', 'block_mrbs') ?></B> <?php echo get_string('rep_for_nweekly', 'block_mrbs') ?>
+                    <B><?php echo mrbs_get_area_string($dbarea, 'rep_num_weeks') ?></B>
+                    <?php echo mrbs_get_area_string($dbarea, 'rep_for_nweekly') ?>
                 </TD>
                 <TD CLASS=CL><INPUT TYPE=TEXT NAME="rep_num_weeks" VALUE="<?php echo $rep_num_weeks ?>">
             </TR>
@@ -643,7 +666,7 @@ print_header_mrbs($day, $month, $year, $area);
                 <td>&nbsp;</td>
             </tr>
             <tr>
-                <td class="CR"><label for="mrbsroomchange"><b><?php print_string('roomchange', 'block_mrbs'); ?></b></td>
+                <td class="CR"><label for="mrbsroomchange"><b><?php echo mrbs_get_area_string($dbarea, 'roomchange'); ?></b></td>
                 <td><input type="checkbox" checked="checked" name="roomchange" id="mrbsroomchange"/></td>
             </tr>
         <?php } ?>
@@ -651,11 +674,11 @@ print_header_mrbs($day, $month, $year, $area);
         <TR>
             <TD colspan=2 align=center>
                 <SCRIPT LANGUAGE="JavaScript">
-                    document.writeln('<INPUT TYPE="button" NAME="save_button" VALUE="<?php echo get_string('savechanges')?>" ONCLICK="validate_and_submit()">');
+                    document.writeln('<INPUT TYPE="button" NAME="save_button" VALUE="<?php echo mrbs_get_area_string($dbarea, 'save'); ?>" ONCLICK="validate_and_submit()">');
                     window.onload = updateFreeRooms();
                 </SCRIPT>
                 <NOSCRIPT>
-                    <INPUT TYPE="submit" VALUE="<?php echo get_string('savechanges') ?>">
+                    <INPUT TYPE="submit" VALUE="<?php echo mrbs_get_area_string($dbarea, 'save'); ?>">
                 </NOSCRIPT>
 
                 <?php
@@ -682,10 +705,8 @@ print_header_mrbs($day, $month, $year, $area);
                 ?>
             </TD>
         </TR>
-    </TABLE>
+    </table>
 
-    <!--<INPUT TYPE=HIDDEN NAME="returl"    VALUE="<?php echo $HTTP_REFERER ?>">-->
-    <!--INPUT TYPE=HIDDEN NAME="room_id"   VALUE="<?php echo $room_id ?>"-->
     <INPUT TYPE=HIDDEN NAME="create_by" VALUE="<?php echo $create_by ?>">
     <INPUT TYPE=HIDDEN NAME="rep_id" VALUE="<?php echo $rep_id ?>">
     <INPUT TYPE=HIDDEN NAME="edit_type" VALUE="<?php echo $edit_type ?>">
@@ -695,5 +716,20 @@ print_header_mrbs($day, $month, $year, $area);
     ?>
 
 </FORM>
+
+<script>
+    var entry_id = <?=(isset($id) ? $id : 'null')?>;
+
+    function changeArea() {
+        var url = buildUrlString();
+        window.location = 'edit_entry.php' + url;
+    }
+
+    <?php
+    if ($all_day) {
+        OnAllDayClick();
+    }
+    ?>
+</script>
 
 <?php include "trailer.php" ?>

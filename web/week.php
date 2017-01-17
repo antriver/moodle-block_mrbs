@@ -125,7 +125,7 @@ if ($area_list_format == "select") {
     $this_room_name = $DB->get_field('block_mrbs_room', 'room_name', array('id' => $room));
     $this_room_description = $DB->get_field('block_mrbs_room', 'description', array('id' => $room));
 } else {
-    $areas = $DB->get_records('block_mrbs_area', null, 'area_name');
+    $areas = mrbs_get_bookable_areas();
     foreach ($areas as $dbarea) {
         if ($pview != 1) {
             echo '<a href="'.($baseurl->out(true, array('area' => $dbarea->id))).'">';
