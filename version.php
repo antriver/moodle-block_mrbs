@@ -14,7 +14,7 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
-$plugin->version = 2017011600;
+$plugin->version = 2017011700;
 $plugin->requires = 2014051200; // Moodle 2.7+.
 $plugin->cron = 300;
 $plugin->component = 'block_mrbs';

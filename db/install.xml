@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<XMLDB PATH="blocks/mrbs/db" VERSION="2017011600" COMMENT="XMLDB file for Moodle blocks/mrbs"
+<XMLDB PATH="blocks/mrbs/db" VERSION="2017011700" COMMENT="XMLDB file for Moodle blocks/mrbs"
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xsi:noNamespaceSchemaLocation="../../../lib/xmldb/xmldb.xsd"
 >
@@ -28,6 +28,7 @@
         <FIELD NAME="type" TYPE="char" LENGTH="1" NOTNULL="true" DEFAULT="E" SEQUENCE="false"/>
         <FIELD NAME="description" TYPE="text" NOTNULL="false" SEQUENCE="false"/>
         <FIELD NAME="roomchange" TYPE="int" LENGTH="4" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="Used to flag edited entries which should be displayed as a 'room change'"/>
+        <FIELD NAME="data" TYPE="text" NOTNULL="false" SEQUENCE="false" COMMENT="Additional JSON-encoded data for the booking."/>
       </FIELDS>
       <KEYS>
         <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
@@ -67,28 +68,5 @@
         <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
       </KEYS>
     </TABLE>
-    <TABLE NAME="block_mrbs_area_questions" COMMENT="Questions asked for certain room type bookings.">
-      <FIELDS>
-        <FIELD NAME="id" TYPE="int" LENGTH="11" NOTNULL="true" SEQUENCE="true"/>
-        <FIELD NAME="area_id" TYPE="int" LENGTH="11" NOTNULL="true" SEQUENCE="false"/>
-        <FIELD NAME="question" TYPE="text" NOTNULL="true" SEQUENCE="false"/>
-        <FIELD NAME="input_type" TYPE="text" NOTNULL="true" SEQUENCE="false"/>
-      </FIELDS>
-      <KEYS>
-        <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
-      </KEYS>
-    </TABLE>
-    <TABLE NAME="block_mrbs_entry_responses" COMMENT="Responses to room type questions for an entry.">
-      <FIELDS>
-        <FIELD NAME="id" TYPE="int" LENGTH="11" NOTNULL="true" SEQUENCE="true"/>
-        <FIELD NAME="entry_id" TYPE="int" LENGTH="11" NOTNULL="true" SEQUENCE="false"/>
-        <FIELD NAME="question_id" TYPE="int" LENGTH="11" NOTNULL="true" SEQUENCE="false"/>
-        <FIELD NAME="response" TYPE="text" NOTNULL="false" SEQUENCE="false"/>
-      </FIELDS>
-      <KEYS>
-        <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
-        <KEY NAME="entry_id" TYPE="foreign" FIELDS="entry_id" REFTABLE="block_mrbs_entries" REFFIELDS="id"/>
-        <KEY NAME="question_id" TYPE="foreign" FIELDS="question_id" REFTABLE="block_mrbs_type_questions" REFFIELDS="id"/>
-      </KEYS>
-    </TABLE>
+  </TABLES>
 </XMLDB>
