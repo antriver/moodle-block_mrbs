@@ -18,6 +18,8 @@ print_header_mrbs(null, null, null, null);
 
 $areas = mrbs_get_bookable_areas();
 
+echo '<h2>'.get_string('index_heading', 'block_mrbs').'</h2>';
+
 echo '<div id="mrbs-index" class="center">';
 
 foreach ($areas as $area) {

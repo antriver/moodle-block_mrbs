@@ -26,7 +26,7 @@ $day = optional_param('day', 0, PARAM_INT);
 $month = optional_param('month', 0, PARAM_INT);
 $year = optional_param('year', 0, PARAM_INT);
 $area = optional_param('area', 0, PARAM_INT);
-//$room = optional_param('room', 0, PARAM_INT);
+$selectedroom = optional_param('room', 0, PARAM_INT);
 $morningstarts_minutes = optional_param('morningstarts_minutes', 0, PARAM_INT);
 $debug_flag = optional_param('debug_flag', 0, PARAM_INT);
 $timetohighlight = optional_param('timetohighlight', -1, PARAM_INT);
@@ -87,7 +87,7 @@ $am7 = mktime($morningstarts, $morningstarts_minutes, 0, $month, $day, $year);
 $pm7 = mktime($eveningends, $eveningends_minutes, 0, $month, $day, $year);
 
 if ($pview != 1) {
-    print_utils_mrbs($area, $year, $month, $day, $area_list_format, $roomnotfound, $baseurl);
+    print_utils_mrbs($area, $selectedroom, $year, $month, $day, $area_list_format, $roomnotfound, $baseurl);
 }
 
 //y? are year, month and day of yesterday

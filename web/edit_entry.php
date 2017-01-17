@@ -358,7 +358,7 @@ print_header_mrbs($day, $month, $year, $area_id);
 
 <H2><?php echo $id ? ($edit_type == "series" ? get_string('editseries', 'block_mrbs') : get_string('editentry', 'block_mrbs')) : get_string('addentry', 'block_mrbs'); ?></H2>
 
-<FORM NAME="main" ACTION="edit_entry_handler.php" METHOD="GET">
+<FORM NAME="main" ACTION="edit_entry_handler.php" METHOD="GET" id="mrbs-booking-form">
     <input type="hidden" name="sesskey" value="<?php echo sesskey(); ?>">
 
     <table border="0" cellpadding="5" cellspacing="5">

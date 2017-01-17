@@ -282,9 +282,7 @@ function print_header_mrbs($day = null, $month = null, $year = null, $area = nul
     }
 }
 
-function print_utils_mrbs($area, $year, $month, $day, $area_list_format, $roomnotfound, $baseurl) {
-    global $DB;
-
+function print_utils_mrbs($area, $room, $year, $month, $day, $area_list_format, $roomnotfound, $baseurl) {
     echo '<div id="mrbs-jump" class="clearfix">';
 
     echo '<div class="areas">';
@@ -330,7 +328,7 @@ function print_utils_mrbs($area, $year, $month, $day, $area_list_format, $roomno
     echo '</div>';
 
     //Draw the three month calendars
-    minicals($year, $month, $day, $area, '', 'day');
+    minicals($year, $month, $day, $area, $room, 'day');
 
     echo '</div>';
 }
@@ -590,6 +588,8 @@ function tdcell($colclass) {
 
 // Display the entry-type color key. This has up to 2 rows, up to 5 columns.
 function show_colour_key() {
+    return false;
+
     global $typel;
     echo "<table border=0><tr>\n";
     $nct = 0;
