@@ -52,6 +52,7 @@ $rep_day = optional_param_array('rep_day', null, PARAM_RAW);
 $rooms = optional_param_array('rooms', array(), PARAM_INT);
 $doublebook = optional_param('doublebook', 0, PARAM_INT);
 $roomchange = optional_param('roomchange', false, PARAM_BOOL);
+$data = optional_param('data', false, PARAM_RAW);
 
 define('MRBS_ERR_DOUBLEBOOK', 1);
 define('MRBS_ERR_TOOMANY', 2);

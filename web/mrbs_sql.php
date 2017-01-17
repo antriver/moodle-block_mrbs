@@ -158,7 +158,7 @@ function mrbsDelEntry($user, $id, $series, $all, $roomadminoverride = false) {
  *   non-zero - The entry's ID
  */
 function mrbsCreateSingleEntry($starttime, $endtime, $entry_type, $repeat_id, $room_id,
-                               $owner, $name, $type, $description, $oldid = 0, $roomchange = false) {
+                               $owner, $name, $type, $description, $oldid = 0, $roomchange = false, $data = null) {
     global $DB;
 
     $add = new stdClass;
@@ -173,6 +173,7 @@ function mrbsCreateSingleEntry($starttime, $endtime, $entry_type, $repeat_id, $r
     $add->description = $description;
     $add->timestamp = time();
     $add->roomchange = $roomchange;
+    $add->data = json_encode($data);
 
     // make sure that any entry is of a positive duration
     // this is to trap potential negative duration created when DST comes
@@ -413,7 +414,7 @@ function mrbsGetRepeatEntryList($time, $enddate, $rep_type, $rep_opt, $max_ittr,
  *   non-zero - The entry's ID
  */
 function mrbsCreateRepeatingEntrys($starttime, $endtime, $rep_type, $rep_enddate, $rep_opt,
-                                   $room_id, $owner, $name, $type, $description, $rep_num_weeks, $roomchange = false, $oldid = 0) {
+                                   $room_id, $owner, $name, $type, $description, $rep_num_weeks, $roomchange = false, $oldid = 0, $data = null) {
     global $max_rep_entrys, $DB;
 
     $ret = new stdClass;
@@ -440,7 +441,7 @@ function mrbsCreateRepeatingEntrys($starttime, $endtime, $rep_type, $rep_enddate
             $DB->delete_records('block_mrbs_repeat', array('id' => $repeatid));
         }
 
-        $ret->id = mrbsCreateSingleEntry($starttime, $endtime, 0, 0, $room_id, $owner, $name, $type, $description, $oldid, $roomchange);
+        $ret->id = mrbsCreateSingleEntry($starttime, $endtime, 0, 0, $room_id, $owner, $name, $type, $description, $oldid, $roomchange, $data);
         $ret->repeating = 0;
         $ret->requested = 1;
         $ret->created = 1;
