@@ -20,11 +20,13 @@ $areas = mrbs_get_bookable_areas();
 
 echo '<h2>'.get_string('index_heading', 'block_mrbs').'</h2>';
 
-echo '<div id="mrbs-index" class="center">';
+echo '<div id="mrbs-index">';
 
+echo '<ul>';
 foreach ($areas as $area) {
-    echo '<a class="btn btn-default" href="web/day.php?area='.$area->id.'">'.$area->area_name.'</a>';
+    echo '<li><a href="web/day.php?area='.$area->id.'">'.$area->area_name.'</a></li>';
 }
+echo '</ul>';
 
 echo '</div>';
 
