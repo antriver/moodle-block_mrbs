@@ -24,7 +24,7 @@ echo '<div id="mrbs-index">';
 
 echo '<ul>';
 foreach ($areas as $area) {
-    echo '<li><a class="btn btn-default" href="web/day.php?area='.$area->id.'">'.$area->area_name.'</a></li>';
+    echo '<li><a href="web/day.php?area='.$area->id.'">'.$area->area_name.'</a></li>';
 }
 echo '</ul>';
 

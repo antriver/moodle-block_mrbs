@@ -333,6 +333,7 @@
     padding:15px;
 }
 
-#mrbs-index .btn {
-    margin:5px;
+#mrbs-index li {
+    font-size: 18px;
+    margin-bottom: 6px;
 }
