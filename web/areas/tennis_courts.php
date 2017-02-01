@@ -1,6 +1,6 @@
 <!-- Display the additional fields for booking tennis courts -->
 <div id="booking-conditions" class="alert alert-info">
-    <h3>Conditions of Use</h3>
+    <p><strong>Conditions of Use</strong></p>
     <ul>
         <li>If you wish to play at night and require lights please contact Katalyn Hu directly<!-- on (phone number and email)-->.
             A fee <!--of XX/RMB--> per hour will be charged for use of lights.</li>
