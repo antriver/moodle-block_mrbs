@@ -202,7 +202,7 @@ if ($area) {
     echo '<tr>';
         echo '<td>'.get_string('allowed_cohorts', 'block_mrbs').'</td>';
         echo '<td>';
-            echo '<select multiple name="allowed_cohorts[]">';
+            echo '<select multiple name="allowed_cohorts[]" style="min-height:300px;">';
             foreach ($cohorts as $cohort) {
 
                 $selected = in_array($cohort->id, $allowedcohorts) ? 'selected' : '';
