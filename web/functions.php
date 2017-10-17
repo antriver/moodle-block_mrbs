@@ -44,7 +44,7 @@ function mrbs_get_area_string($area, $identifier) {
 
 /**
  * Strips all non alphanumeric characters (except spaces), and converts the given string to snake_case.
-
+ *
  * @param string $string
  *
  * @return string
